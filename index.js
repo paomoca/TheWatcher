@@ -2,7 +2,12 @@
 var express = require('express')
 var MongoClient = require('mongodb').MongoClient
 var assert = require('assert')
+var bodyParser = require('body-parser')
 var app = express()
+
+
+app.use(bodyParser.json()) // support json encoded bodies
+app.use(bodyParser.urlencoded({ extended: true })) // support encoded bodies
 
 // Connection URL
 var url = 'mongodb://localhost:27017/myproject';
@@ -103,6 +108,11 @@ app.put('/user', function (req, res) {
 app.delete('/user', function (req, res) {
   res.send('Got a DELETE request at /user')
 })
+
+app.post('/variable', function (req, res) {
+  res.send(req.body)
+})
+
 
 app.listen(3000, function () {
   console.log('Example app listening on port 3000!')
