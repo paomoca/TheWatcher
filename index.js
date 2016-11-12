@@ -47,6 +47,72 @@ var VariableSchema = {
 
 }
 
+var DeviceSchema = {
+
+  type: 'object',
+  properties: {
+    payload: {
+      type: 'object',
+      properties: {
+        nombre: {
+          type: 'string',
+          required: true
+        },
+        lugar: {
+          type: 'string',
+          required: true
+        },
+        variable_id: {
+          type: 'string',
+          required: true
+        },
+        descripcion: {
+          type: 'string',
+          required: true
+        }
+      }
+
+    }
+  }
+
+}
+
+// var DataSchema = {
+//
+//   type: 'object',
+//   properties: {
+//     payload: {
+//       type: 'object',
+//       properties: {
+//         data: {
+//            type: 'array',
+//            items: {
+//                type: 'string'
+//            },
+//            'minItems': 1,
+//            'uniqueItems': true
+//        }
+//       }
+//
+//     }
+//   }
+//
+// }
+//
+// {
+// “payload”: {
+// “data”: [
+// 	{
+// “dataKey”: string,
+//  “deviceKey”: string,
+//  “measurements”:[ {“time”: number, “val”: number} ]
+// }
+// ],
+// }
+//  “metadata”: { … }
+// }
+
+
 //API
 
 app.post('/variable', validate({body: VariableSchema}), function (req, res) {
