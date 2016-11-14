@@ -41,7 +41,7 @@
     properties: {
       payload: {
         type: 'object',
-        required: true,      
+        required: true,
         properties: {
           nombre: {
             type: 'string',
@@ -64,18 +64,18 @@
       }
     }
 
-  } 
+  }
 
   var DataSchema = {
 
     type: 'object',
     properties: {
-      
+
       payload: {
         type: 'object',
         required: true,
         properties: {
-          
+
           data: {
              type: 'array',
 
@@ -83,7 +83,7 @@
 
                 type: 'object',
                 properties: {
-                  
+
                   dataKey: {
                     type: 'string',
                     required: true
@@ -100,7 +100,7 @@
                     items: {
                       type: 'object',
                       properties:{
-                        
+
                         time: {
                           type: 'string',
                           required: true
@@ -131,7 +131,7 @@
 // "payload": {
 // "data": [
 //   {
-//   "dataKey": "datkey", 
+//   "dataKey": "datkey",
 //   "deviceKey": "devkey",
 //   "measurements":[ {"time": "number", "value": 0.234345356}, {"time": "number", "value": 0.1234345356} ]
 //   }
@@ -145,7 +145,7 @@
     properties: {
       payload: {
         type: 'object',
-        required: true,      
+        required: true,
         properties: {
 
           data: {
@@ -153,7 +153,7 @@
              items: {
                 type: 'object',
                 properties: {
-                  
+
                   deviceKey: {
                     type: 'string',
                     required: true
@@ -163,7 +163,7 @@
                     items: {
                       type: 'object',
                       properties:{
-                        
+
                         time: {
                           type: 'string',
                           required: true
@@ -196,7 +196,7 @@
   // }
   // ]
   // },
-  // “metadata”: { … }  
+  // “metadata”: { … }
   // }
 
   var DeviceDataSchema = {
@@ -205,7 +205,7 @@
     properties: {
       payload: {
         type: 'object',
-        required: true,      
+        required: true,
         properties: {
 
           data: {
@@ -213,13 +213,13 @@
              items: {
                 type: 'object',
                 properties: {
-                 
+
                   measurements:{
                     type: 'array',
                     items: {
                       type: 'object',
                       properties:{
-                  
+
                         time: {
                           type: 'string',
                           required: true
@@ -250,7 +250,7 @@
   // “payload”: {
   //  “data”:[ {“time”: number, “val”: number} ]
   // },
-  // “metadata”: { … }  
+  // “metadata”: { … }
   // }
 
   // Create a json scehma
@@ -273,18 +273,38 @@
       }
   }
 
+  var GetDataSchema = {
+
+    type: 'object',
+    properties: {
+        EPOCH_START: {
+            type: 'string',
+            pattern: '^(0|[1-9][0-9]*)$',
+            required: true
+        },
+        EPOCH_END: {
+            type: 'string',
+            pattern: '^(0|[1-9][0-9]*)$',
+            required: false
+        }
+    }
+
+  }
+
   exports.StreetSchema = StreetSchema;
   exports.VariableSchema = VariableSchema;
   exports.DeviceSchema = DeviceSchema;
   exports.DataSchema = DataSchema;
   exports.VariableDataSchema = VariableDataSchema;
   exports.DeviceDataSchema = DeviceDataSchema;
+  exports.GetDataSchema = GetDataSchema;
+
 
   // {
   // "payload": {
   // "data": [
   //   {
-  //   "dataKey": "datkey", 
+  //   "dataKey": "datkey",
   //   "deviceKey": "devkey",
   //   "measurements":[ {"time": "number", "value": 0.234345356} ]
   //   }

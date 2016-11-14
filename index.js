@@ -20,7 +20,7 @@
     console.log("Connected successfully to server");
 
     dbb = db
-    
+
   });
 
   /* API ***********************************************************************************************/
@@ -34,7 +34,7 @@
   })
 
   app.post('/data', validate({body: schemas.DataSchema}), function (req, res) {
-    
+
     var testValue = req.body.payload.data[0].measurements[0].value
     var dataArray = req.body.payload.data
 
@@ -85,6 +85,44 @@
     res.send('Good')
   })
 
+  app.get('/variables', function (req, res) {
+  //  res.status(201)
+    res.send('Hello World! ')
+  })
+
+  app.get('/variable/:variable_id', function (req, res) {
+  //  res.status(201)
+    res.send('Hello World! ')
+  })
+
+  app.get('/devices/:variable', function (req, res) {
+  //  res.status(201)
+    res.send('Hello World! ')
+  })
+
+  app.get('/data/variable/:dataKey', validate({query: schemas.GetDataSchema}),  function (req, res) {
+
+  //  res.status(201)
+    res.send(req.query)
+    // var variable = req.params.dataKey
+    // var start = +JSON.stringify(req.query.EPOCH_START)
+    // var end = JSON.stringify(req.query.EPOCH_END)
+
+  //  res.send(variable+' - '+start+' - '+end)
+    res.send('Good')
+  })
+
+  app.get('/data/device/:deviceKey', function (req, res) {
+  //  res.status(201)
+    //res.send(req.params)
+    var device = req.params.deviceKey
+    var start = JSON.stringify(req.query.EPOCH_START)
+    var end = JSON.stringify(req.query.EPOCH_END)
+
+    res.send(req.query)
+
+  })
+
   /******************************************************************************************************/
 
   // This route validates req.body against the StreetSchema
@@ -100,9 +138,9 @@
     res.send('Hello World! '+JSON.stringify(req.query.HOLA))
   })
 
-  app.get('/:pao/:juan/:diego', function (req, res) {
-    res.send(req.params)
-  })
+  // app.get('/:pao/:juan/:diego', function (req, res) {
+  //   res.send(req.params)
+  // })
 
   app.post('/', function (req, res) {
     res.send('Got a POST request'+req.body)
@@ -116,12 +154,31 @@
     res.send('Got a DELETE request at /user')
   })
 
+  var TokenSchema = {
+    type: 'object',
+    properties: {
+        token: {
+            type: 'string',
+            format: 'alphanumeric',
+            minLength: 10,
+            maxLength: 10,
+            required: true
+        }
+    }
+}
+
+app.get('/streets/', validate({query: TokenSchema}), function(req, res) {
+    // application code
+    res.send(req.query)
+});
+
 
 
   //Handle errors
   app.use(function (err, req, res, next) {
     // logic
     console.log('error')
+    console.log(err)
     console.log(JSON.stringify(err))
 
     var responseData;
