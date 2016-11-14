@@ -19,6 +19,7 @@ var VariableSchema = {
   properties: {
     payload: {
       type: 'object',
+      required: true,
       properties: {
         nombre: {
           type: 'string',
@@ -53,6 +54,7 @@ var DeviceSchema = {
   properties: {
     payload: {
       type: 'object',
+      required: true,      
       properties: {
         nombre: {
           type: 'string',
@@ -77,39 +79,70 @@ var DeviceSchema = {
 
 }
 
-// var DataSchema = {
-//
-//   type: 'object',
-//   properties: {
-//     payload: {
-//       type: 'object',
-//       properties: {
-//         data: {
-//            type: 'array',
-//            items: {
-//                type: 'string'
-//            },
-//            'minItems': 1,
-//            'uniqueItems': true
-//        }
-//       }
-//
-//     }
-//   }
-//
-// }
-//
+
+
+var DataSchema = {
+
+  type: 'object',
+  properties: {
+    
+    payload: {
+      type: 'object',
+      required: true,
+      properties: {
+        
+        data: {
+           type: 'array',
+           items: {
+              type: 'object',
+              properties: {
+                
+                dataKey: {
+                  type: 'string',
+                  required: true
+                },
+                deviceKey: {
+                  type: 'string',
+                  required: true
+                },
+                measurements:{
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    properties:{
+                      
+                      time: {
+                        type: 'string',
+                        required: true
+                      },
+                      value: {
+                        type: 'number',
+                        required: true
+                      }
+                    }
+                  }
+                }
+               }
+           },
+           'minItems': 1,
+           'uniqueItems': true
+       }
+      }
+
+    }
+  }
+
+}
 // {
-// “payload”: {
-// “data”: [
-// 	{
-// “dataKey”: string,
-//  “deviceKey”: string,
-//  “measurements”:[ {“time”: number, “val”: number} ]
+// "payload": {
+// "data": [
+//   {
+//   "dataKey": "datkey", 
+//   "deviceKey": "devkey",
+//   "measurements":[ {"time": "number", "value": 0.234345356} ]
+//   }
+//   ]
 // }
-// ],
-// }
-//  “metadata”: { … }
 // }
 
 
@@ -117,6 +150,14 @@ var DeviceSchema = {
 
 app.post('/variable', validate({body: VariableSchema}), function (req, res) {
   res.send('Good')
+
+})
+
+app.post('/data', validate({body: DataSchema}), function (req, res) {
+  var testValue = req.body.payload.data[0].measurements[0].value
+    res.send('Good '+testValue)
+
+  console.log(testValue)
 })
 
 // Create a json scehma
