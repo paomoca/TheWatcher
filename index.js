@@ -4,188 +4,12 @@ var MongoClient = require('mongodb').MongoClient
 var assert = require('assert')
 var validate = require('express-jsonschema').validate
 var bodyParser = require('body-parser')
+var schemas = require('./schemas.js')
+var db_functions = require('./db_functions.js')
 var app = express()
-
 
 app.use(bodyParser.json()) // support json encoded bodies
 app.use(bodyParser.urlencoded({ extended: true })) // support encoded bodies
-
-
-//JSON SCHEMAS
-
-var VariableSchema = {
-
-  type: 'object',
-  properties: {
-    payload: {
-      type: 'object',
-      required: true,
-      properties: {
-        nombre: {
-          type: 'string',
-          required: true
-        },
-        lugar: {
-          type: 'string',
-          required: true
-        },
-        unidad: {
-          type: 'string',
-          required: true
-        },
-        descripcion: {
-          type: 'string',
-          required: true
-        },
-        foto_url: {
-          type: 'string',
-          required: false
-        }
-      }
-
-    }
-  }
-
-}
-
-var DeviceSchema = {
-
-  type: 'object',
-  properties: {
-    payload: {
-      type: 'object',
-      required: true,      
-      properties: {
-        nombre: {
-          type: 'string',
-          required: true
-        },
-        lugar: {
-          type: 'string',
-          required: true
-        },
-        variable_id: {
-          type: 'string',
-          required: true
-        },
-        descripcion: {
-          type: 'string',
-          required: true
-        }
-      }
-
-    }
-  }
-
-}
-
-
-
-var DataSchema = {
-
-  type: 'object',
-  properties: {
-    
-    payload: {
-      type: 'object',
-      required: true,
-      properties: {
-        
-        data: {
-           type: 'array',
-           items: {
-              type: 'object',
-              properties: {
-                
-                dataKey: {
-                  type: 'string',
-                  required: true
-                },
-                deviceKey: {
-                  type: 'string',
-                  required: true
-                },
-                measurements:{
-                  type: 'array',
-                  items: {
-                    type: 'object',
-                    properties:{
-                      
-                      time: {
-                        type: 'string',
-                        required: true
-                      },
-                      value: {
-                        type: 'number',
-                        required: true
-                      }
-                    }
-                  }
-                }
-               }
-           },
-           'minItems': 1,
-           'uniqueItems': true
-       }
-      }
-
-    }
-  }
-
-}
-// {
-// "payload": {
-// "data": [
-//   {
-//   "dataKey": "datkey", 
-//   "deviceKey": "devkey",
-//   "measurements":[ {"time": "number", "value": 0.234345356} ]
-//   }
-//   ]
-// }
-// }
-
-
-//API
-
-app.post('/variable', validate({body: VariableSchema}), function (req, res) {
-  res.send('Good')
-
-})
-
-app.post('/data', validate({body: DataSchema}), function (req, res) {
-  var testValue = req.body.payload.data[0].measurements[0].value
-    res.send('Good '+testValue)
-
-  console.log(testValue)
-})
-
-// Create a json scehma
-var StreetSchema = {
-    type: 'object',
-    properties: {
-        number: {
-            type: 'number',
-            required: true
-        },
-        name: {
-            type: 'string',
-            required: true
-        },
-        type: {
-            type: 'string',
-            required: true,
-            enum: ['Street', 'Avenue', 'Boulevard']
-        }
-    }
-}
-
-// This route validates req.body against the StreetSchema
-app.post('/street', validate({body: StreetSchema}), function(req, res) {
-    // At this point req.body has been validated and you can
-    // begin to execute your application code
-    res.send('Good')
-})
 
 // Connection URL
 var url = 'mongodb://localhost:27017/myproject';
@@ -195,76 +19,49 @@ MongoClient.connect(url, function(err, db) {
   assert.equal(null, err);
   console.log("Connected successfully to server");
 
-  insertDocuments(db, function() {
-    findDocuments(db, function() {
-     db.close();
-   });
-  });
+  dbb = db
+  
 });
 
-var insertDocuments = function(db, callback) {
-  // Get the documents collection
-  var collection = db.collection('documents');
-  // Insert some documents
-  collection.insertMany([
-    {a : 1}, {a : 2}, {a : 3}
-  ], function(err, result) {
-    assert.equal(err, null);
-    assert.equal(3, result.result.n);
-    assert.equal(3, result.ops.length);
-    console.log("Inserted 3 documents into the collection");
-    callback(result);
-  });
-}
+//API
 
-var findAllDocuments = function(db, callback) {
-  // Get the documents collection
-  var collection = db.collection('documents');
-  // Find some documents
-  collection.find({}).toArray(function(err, docs) {
-    assert.equal(err, null);
-    console.log("Found the following records");
-    console.log(docs)
-    callback(docs);
-  });
-}
+app.post('/variable', validate({body: schemas.VariableSchema}), function (req, res) {
+  res.send('Good')
+})
 
-var findDocuments = function(db, callback) {
-  // Get the documents collection
-  var collection = db.collection('documents');
-  // Find some documents
-  collection.find({'a': 3}).toArray(function(err, docs) {
-    assert.equal(err, null);
-    console.log("Found the following records");
-    console.log(docs);
-    callback(docs);
-  });
-}
+app.post('/device', validate({body: schemas.DeviceSchema}), function (req, res) {
+  res.send('Good')
+})
 
-var updateDocument = function(db, callback) {
-  // Get the documents collection
-  var collection = db.collection('documents');
-  // Update document where a is 2, set b equal to 1
-  collection.updateOne({ a : 2 }
-    , { $set: { b : 1 } }, function(err, result) {
-    assert.equal(err, null);
-    assert.equal(1, result.result.n);
-    console.log("Updated the document with the field a equal to 2");
-    callback(result);
-  });
-}
+app.post('/data', validate({body: schemas.DataSchema}), function (req, res) {
+  var testValue = req.body.payload.data[0].measurements[0].value
 
-var removeDocument = function(db, callback) {
-  // Get the documents collection
-  var collection = db.collection('documents');
-  // Insert some documents
-  collection.deleteOne({ a : 3 }, function(err, result) {
-    assert.equal(err, null);
-    assert.equal(1, result.result.n);
-    console.log("Removed the document with the field a equal to 3");
-    callback(result);
+db_functions.insertDocuments(dbb, function() {
+    db_functions.findDocuments(dbb, function() {
+     dbb.close();
+   });
   });
-}
+
+    res.send('Good '+testValue)
+
+  console.log(testValue)
+})
+
+app.post('/data/:dataKey', validate({body: schemas.VariableDataSchema}), function (req, res) {
+  res.send('Good')
+})
+
+app.post('/data/:dataKey/:deviceKey', validate({body: schemas.DeviceDataSchema}), function (req, res) {
+  res.send('Good')
+})
+
+// This route validates req.body against the StreetSchema
+app.post('/street', validate({body: schemas.StreetSchema}), function(req, res) {
+    // At this point req.body has been validated and you can
+    // begin to execute your application code
+    res.send('Good')
+})
+
 
 app.get('/', function (req, res) {
 //  res.status(201)
@@ -289,7 +86,7 @@ app.delete('/user', function (req, res) {
 
 
 
-
+//Handle errors
 app.use(function (err, req, res, next) {
   // logic
   console.log('error')
