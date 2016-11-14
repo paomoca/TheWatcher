@@ -78,7 +78,9 @@
           
           data: {
              type: 'array',
+
              items: {
+
                 type: 'object',
                 properties: {
                   
@@ -86,11 +88,14 @@
                     type: 'string',
                     required: true
                   },
+
                   deviceKey: {
                     type: 'string',
                     required: true
                   },
+
                   measurements:{
+
                     type: 'array',
                     items: {
                       type: 'object',
@@ -105,10 +110,12 @@
                           required: true
                         }
                       }
-                    }
+                    } //items
                   }
-                 }
-             },
+
+                }
+
+             }, //items
              'minItems': 1,
              'uniqueItems': true
          }
@@ -118,6 +125,19 @@
     }
 
   }
+
+
+//   {
+// "payload": {
+// "data": [
+//   {
+//   "dataKey": "datkey", 
+//   "deviceKey": "devkey",
+//   "measurements":[ {"time": "number", "value": 0.234345356}, {"time": "number", "value": 0.1234345356} ]
+//   }
+//   ]
+// }
+// }
 
   var VariableDataSchema = {
 
