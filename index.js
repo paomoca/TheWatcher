@@ -12,7 +12,9 @@
   app.use(bodyParser.urlencoded({ extended: true })) // support encoded bodies
 
   // Connection URL
+  //var url = 'mongodb://172.16.73.145:27017/juan';
   var url = 'mongodb://localhost:27017/myproject';
+
   // Use connect method to connect to the server
   MongoClient.connect(url, function(err, database) {
     assert.equal(null, err);
@@ -24,7 +26,9 @@
   /* API ***********************************************************************************************/
 
   // 1. Nuevo tipo de variable
+
   //Prueba
+
 //   {
 // "payload":
 // 	{
@@ -54,7 +58,9 @@
   })
 
   // 2. Nuevo dispositivo
+
   //Prueba
+
 //   {
 //  "payload": {
 //  "nombre" : "Device 1",
@@ -83,7 +89,9 @@
 
 
   // 3. Inserción de múltiples mediciones: cualquier variable, cualquier dispositivo
-  //Prueba{
+
+  //Prueba
+  //{
   // "payload": {
   // "data": [
   // {
@@ -121,7 +129,9 @@
   })
 
   // 4. Inserción de múltiples mediciones: una variable en específico
+
   //Prueba
+
   // {
   // "payload": {
   // "data": [
