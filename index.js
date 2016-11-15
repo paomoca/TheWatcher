@@ -13,7 +13,8 @@
 
   // Connection URL
   //var url = 'mongodb://172.16.73.145:27017/juan';
-  var url = 'mongodb://localhost:27017/myproject';
+  //var url = 'mongodb://localhost:27017/myproject';
+var url = 'mongodb://juan:juanito@ds057176.mlab.com:57176/paomoca-tests'
 
   // Use connect method to connect to the server
   MongoClient.connect(url, function(err, database) {
@@ -306,10 +307,10 @@
   // })
   //
   //
-  // app.get('/', function (req, res) {
-  // //  res.status(201)
-  //   res.send('Hello World! '+JSON.stringify(req.query.HOLA))
-  // })
+  app.get('/', function (req, res) {
+  //  res.status(201)
+    res.send('Hello World! ')
+  })
 
   // app.get('/:pao/:juan/:diego', function (req, res) {
   //   res.send(req.params)
