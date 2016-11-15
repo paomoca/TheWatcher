@@ -13,8 +13,8 @@
 
   // Connection URL
   //var url = 'mongodb://172.16.73.145:27017/juan';
-  //var url = 'mongodb://localhost:27017/myproject';
-var url = 'mongodb://juan:juanito@ds057176.mlab.com:57176/paomoca-tests'
+  var url = 'mongodb://localhost:27017/myproject';
+  //var url = 'mongodb://juan:juanito@ds057176.mlab.com:57176/paomoca-tests'
 
   // Use connect method to connect to the server
   MongoClient.connect(url, function(err, database) {
@@ -121,7 +121,7 @@ var url = 'mongodb://juan:juanito@ds057176.mlab.com:57176/paomoca-tests'
 
       })
 
-      db_functions.insertData(db, dataKey, measurementsArray, function(result) {
+      db_functions.insertData(db, dataKey, deviceKey, measurementsArray, function(err,result) {
           res.send('Good inserted '+result.insertedCount+' elements')
       })
 
@@ -160,10 +160,9 @@ var url = 'mongodb://juan:juanito@ds057176.mlab.com:57176/paomoca-tests'
         measurementItem.deviceKey = deviceKey
       })
 
-      db_functions.insertData(db, dataKey, measurementsArray, function(result) {
-        res.send('Good inserted '+result.insertedCount+' elements')
+      db_functions.insertData(db, dataKey, deviceKey, measurementsArray, function(err, result) {
+        res.send('Good inserted '+result+' elements')
       })
-
 
     });
 
@@ -199,8 +198,9 @@ var url = 'mongodb://juan:juanito@ds057176.mlab.com:57176/paomoca-tests'
         measurementItem.deviceKey = deviceKey
       })
 
-      db_functions.insertData(db, dataKey, measurementsArray, function(result) {
-        res.send('Good inserted '+result.insertedCount+' elements')
+      db_functions.insertData(db, dataKey, deviceKey, measurementsArray, function(err, result) {
+      //  res.send('Good inserted '+result.insertedCount+' elements')
+      res.send("hola")
       })
 
     })
@@ -351,7 +351,7 @@ var url = 'mongodb://juan:juanito@ds057176.mlab.com:57176/paomoca-tests'
   //Handle errors
   app.use(function (err, req, res, next) {
     // logic
-    console.log('error')
+    console.log('error '+err.name)
     console.log(err)
     console.log(JSON.stringify(err))
 

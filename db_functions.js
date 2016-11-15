@@ -1,4 +1,5 @@
 var assert = require('assert')
+var ObjectId = require('mongodb').ObjectID
 
 var insertVariable = function(db, body, callback) {
   // Get the documents collection
@@ -14,10 +15,10 @@ var insertVariable = function(db, body, callback) {
 }
 
 var insertDevice = function(db, body, callback) {
-  // Get the documents collection
-  var collection = db.collection('devices');
-  // Insert some documents
-  collection.insertOne(body,
+
+  var collection = db.collection('devices')
+
+    collection.insertOne(body,
     function(err, result) {
     assert.equal(null, err);
     console.log("Inserted 1 document1 into the collection");
@@ -26,19 +27,71 @@ var insertDevice = function(db, body, callback) {
 }
 
 
-var insertData = function(db, dataKey, measurements, callback) {
-  // Get the documents collection
-  var collection = db.collection(dataKey);
-  // Insert some documents
-  collection.insertMany(measurements,
-    function(err, result) {
-    assert.equal(null, err);
-    console.log("Inserted 1 document1 into the collection");
-    callback(result);
-  });
+var insertData = function(db, dataKey, deviceKey, measurements, callback) {
+
+
+  validateKeys(db, dataKey, deviceKey, function(err){
+
+    if(err) {
+      callback(new Error('Invalid Keys'))
+    //  console.log(callback.arguments);
+    } else {
+
+      // Get the documents collection
+      var collection = db.collection(dataKey)
+
+      collection.insertMany(measurements, function(err, result) {
+        console.log("Inserted 1 document1 into the collection");
+        callback(null, result.insertedCount)
+      })
+    }
+
+  })
+
+
 }
 
+var validateKeys = function(db, dataKey, deviceKey, callback){
 
+  //Checks if variable id exists
+  findVariable(db, dataKey, function(result){
+
+    if(!result) {
+      callback(new Error('Unknown dataKey'))
+    } else {
+      findDevice(db, deviceKey, function(result){
+
+        if(!result) {
+          callback(new Error('Unknown deviceKey'))
+        }
+
+      })
+    }
+  })
+
+}
+
+var findVariable = function(db, dataKey, callback) {
+  // Get the documents collection
+  var collection = db.collection('variables')
+
+  // Find some documents
+  collection.findOne({_id: ObjectId(dataKey)}, function(err, result){
+    callback(result)
+  })
+
+}
+
+var findDevice = function(db, deviceKey, callback) {
+  // Get the documents collection
+  var collection = db.collection('devices')
+
+  // Find some documents
+  collection.findOne({_id: ObjectId(deviceKey)}, function(err, result){
+    callback(result)
+  })
+
+}
 
 
 
