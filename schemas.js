@@ -66,6 +66,16 @@
 
   }
 
+//   {
+//  "payload": {
+//  "nombre" : "Device 1",
+//  "lugar" : "Estacionamiento puerta 6",
+//  "variable_id": "",
+//  "descripcion":"Chiquito y brillante"
+//  }
+// }
+
+
   var DataSchema = {
 
     type: 'object',
@@ -78,7 +88,7 @@
 
           data: {
              type: 'array',
-
+             required: true,
              items: {
 
                 type: 'object',
@@ -102,7 +112,7 @@
                       properties:{
 
                         time: {
-                          type: 'string',
+                          type: 'number',
                           required: true
                         },
                         value: {
@@ -126,18 +136,18 @@
 
   }
 
-
-//   {
-// "payload": {
-// "data": [
-//   {
-//   "dataKey": "datkey",
-//   "deviceKey": "devkey",
-//   "measurements":[ {"time": "number", "value": 0.234345356}, {"time": "number", "value": 0.1234345356} ]
-//   }
-//   ]
-// }
-// }
+  //
+  // {
+  //   "payload": {
+  //   "data": [
+  //   {
+  //   "dataKey" : "582a4b5e8cd48d060770c8f8",
+  //   "deviceKey": "582a50f293bcda0676227ee6",
+  //   "measurements":[ {"time": 12345678, "value": 0.456} ]
+  //   }
+  //   ]
+  //   }
+  //   }
 
   var VariableDataSchema = {
 
@@ -150,7 +160,9 @@
 
           data: {
              type: 'array',
+             required: true,
              items: {
+
                 type: 'object',
                 properties: {
 
@@ -165,7 +177,7 @@
                       properties:{
 
                         time: {
-                          type: 'string',
+                          type: 'number',
                           required: true
                         },
                         value: {
@@ -187,17 +199,20 @@
   }
 }
 
-  // {
-  // “payload”: {
-  // “data”: [
-  // {
-  // “deviceKey”: string,
-  // “measurements”:[ {“time”: number, “val”: number} ]
-  // }
-  // ]
-  // },
-  // “metadata”: { … }
-  // }
+// {
+//   "payload": {
+//   "data": [
+//   {
+//   "deviceKey": "582a50f293bcda0676227ee6",
+//   "measurements":[ {"time": 12345678, "value": 0.556},
+//   {"time": 12345678, "value": 1.456},
+//   {"time": 12345678, "value": 2.456},
+//   {"time": 12345678, "value": 3.456}]
+//   }
+//   ]
+//   }
+//   }
+
 
   var DeviceDataSchema = {
 
@@ -210,6 +225,7 @@
 
           data: {
              type: 'array',
+             required: true,
              items: {
                 type: 'object',
                 properties: {
@@ -221,7 +237,7 @@
                       properties:{
 
                         time: {
-                          type: 'string',
+                          type: 'number',
                           required: true
                         },
                         value: {
@@ -291,6 +307,31 @@
 
   }
 
+  var GetStatisticsSchema = {
+
+    type: 'object',
+    properties: {
+        EPOCH_START: {
+            pattern: '^(0|[1-9][0-9]*)$',
+            required: true
+        },
+        EPOCH_END: {
+            pattern: '^(0|[1-9][0-9]*)$',
+            required: false
+        },
+        MEAN : {
+          pattern: '^(true|false|TRUE|FALSE|0|1)$'
+        },
+        MEDIAN : {
+          pattern: '^(true|false|TRUE|FALSE|0|1)$'
+        },
+        MODE : {
+          pattern: '^(true|false|TRUE|FALSE|0|1)$'
+        }
+    }
+
+  }
+
   exports.StreetSchema = StreetSchema;
   exports.VariableSchema = VariableSchema;
   exports.DeviceSchema = DeviceSchema;
@@ -298,6 +339,7 @@
   exports.VariableDataSchema = VariableDataSchema;
   exports.DeviceDataSchema = DeviceDataSchema;
   exports.GetDataSchema = GetDataSchema;
+  exports.GetStatisticsSchema = GetStatisticsSchema;
 
 
   // {

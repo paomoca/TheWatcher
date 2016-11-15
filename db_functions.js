@@ -1,5 +1,41 @@
 var assert = require('assert')
 
+var insertVariable = function(db, body, callback) {
+  // Get the documents collection
+  var collection = db.collection('variables');
+  // Insert some documents
+  collection.insertOne(body,
+    function(err, result) {
+    assert.equal(null, err);
+    console.log("Inserted 1 document1 into the collection");
+    callback(result);
+  });
+}
+
+var insertDevice = function(db, body, callback) {
+  // Get the documents collection
+  var collection = db.collection('devices');
+  // Insert some documents
+  collection.insertOne(body,
+    function(err, result) {
+    assert.equal(null, err);
+    console.log("Inserted 1 document1 into the collection");
+    callback(result);
+  });
+}
+
+var insertData = function(db, dataKey, measurementItem, callback) {
+  // Get the documents collection
+  var collection = db.collection(dataKey);
+  // Insert some documents
+  collection.insertOne(measurementItem,
+    function(err, result) {
+    assert.equal(null, err);
+    console.log("Inserted 1 document1 into the collection");
+    callback(result);
+  });
+}
+
 var insertDocuments = function(db, callback) {
   // Get the documents collection
   var collection = db.collection('documents');
@@ -64,6 +100,9 @@ var removeDocument = function(db, callback) {
   });
 }
 
+exports.insertVariable = insertVariable;
+exports.insertDevice = insertDevice;
+exports.insertData = insertData;
 
 exports.insertDocuments = insertDocuments;
 exports.findAllDocuments = findAllDocuments;
