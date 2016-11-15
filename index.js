@@ -24,29 +24,76 @@
   /* API ***********************************************************************************************/
 
   // 1. Nuevo tipo de variable
+  //Prueba
+//   {
+// "payload":
+// 	{
+// "nombre": "Latas",
+//  "lugar": "CUBO",
+//  "unidad": "número",
+//  "descripcion": "Contador de latas",
+//  "foto_url": "latas.jpg"
+//  }
+// }
   app.post('/variable', validate({body: schemas.VariableSchema}), function (req, res) {
 
     var body = req.body.payload
 
-    db_functions.insertVariable(db, body, function() {
-      res.send(body)
+    db_functions.insertVariable(db, body, function(result) {
+      var key = result.ops[0]._id
+      var response = JSON.stringify({
+        payload: {
+          variable_id: key
+        }
+      })
+      res.status(200)
+      res.setHeader('Content-Type', 'application/json');
+      res.send(response)
     })
 
   })
 
   // 2. Nuevo dispositivo
+  //Prueba
+//   {
+//  "payload": {
+//  "nombre" : "Device 1",
+//  "lugar" : "Estacionamiento puerta 6",
+//  "variable_id": "582a4b5e8cd48d060770c8f8",
+//  "descripcion":"Chiquito y brillante"
+//  }
+// }
   app.post('/device', validate({body: schemas.DeviceSchema}), function (req, res) {
 
     var body = req.body.payload
 
-    db_functions.insertDevice(db, body, function() {
-      res.send(body)
+    db_functions.insertDevice(db, body, function(result) {
+      var key = result.ops[0]._id
+      var response = JSON.stringify({
+        payload: {
+          variable_id: key
+        }
+      })
+      res.status(200)
+      res.setHeader('Content-Type', 'application/json');
+      res.send(response)
     })
 
   })
 
 
   // 3. Inserción de múltiples mediciones: cualquier variable, cualquier dispositivo
+  //Prueba{
+  // "payload": {
+  // "data": [
+  // {
+  // "dataKey" : "582a4b5e8cd48d060770c8f8",
+  // "deviceKey": "582a50f293bcda0676227ee6",
+  // "measurements":[ {"time": 12345678, "value": 0.456} ]
+  // }
+  // ]
+  // }
+  // }
   app.post('/data', validate({body: schemas.DataSchema}), function (req, res) {
 
     var testValue = req.body.payload.data[0].measurements[0].value
@@ -63,19 +110,31 @@
         // var value = measurementItem.value
         measurementItem.deviceKey = deviceKey
 
-        db_functions.insertData(db, dataKey, measurementItem, function() {
+      })
 
-        })
-
+      db_functions.insertData(db, dataKey, measurementsArray, function(result) {
+          res.send('Good inserted '+result.insertedCount+' elements')
       })
 
     });
 
-    res.send('Good '+testValue)
-
   })
 
   // 4. Inserción de múltiples mediciones: una variable en específico
+  //Prueba
+  // {
+  // "payload": {
+  // "data": [
+  // {
+  // "deviceKey": "582a50f293bcda0676227ee6",
+  // "measurements":[ {"time": 12345678, "value": 0.556},
+  // {"time": 12345678, "value": 1.456},
+  // {"time": 12345678, "value": 2.456},
+  // {"time": 12345678, "value": 3.456}]
+  // }
+  // ]
+  // }
+  // }
   app.post('/data/:dataKey', validate({body: schemas.VariableDataSchema}), function (req, res) {
 
     var dataArray = req.body.payload.data
@@ -87,23 +146,33 @@
       var measurementsArray = dataItem.measurements
 
       measurementsArray.forEach(function(measurementItem){
-
         measurementItem.deviceKey = deviceKey
+      })
 
-        db_functions.insertData(db, dataKey, measurementItem, function() {
-
-        })
-
+      db_functions.insertData(db, dataKey, measurementsArray, function(result) {
+        res.send('Good inserted '+result.insertedCount+' elements')
       })
 
 
     });
 
-  res.send('Good')
 
   })
 
   // 5. Inserción de múltiples mediciones: una variable en específico, un dispositivo en específico
+  //Prueba
+  // {
+  // "payload": {
+  // "data": [
+  // {
+  // "measurements":[ {"time": 12345678, "value": 0.8},
+  // {"time": 12345678, "value": 1.0},
+  // {"time": 12345678, "value": 2.0},
+  // {"time": 12345678, "value": 3.0}]
+  // }
+  // ]
+  // }
+  // }
   app.post('/data/:dataKey/:deviceKey', validate({body: schemas.DeviceDataSchema}), function (req, res) {
 
     var dataKey = req.params.dataKey
@@ -114,21 +183,18 @@
     dataArray.forEach(function(dataItem){
 
       var measurementsArray = dataItem.measurements
+
       measurementsArray.forEach(function(measurementItem){
-
         measurementItem.deviceKey = deviceKey
-
-        db_functions.insertData(db, dataKey, measurementItem, function() {
-
-        })
-
       })
-    });
 
-    res.send('Good')
+      db_functions.insertData(db, dataKey, measurementsArray, function(result) {
+        res.send('Good inserted '+result.insertedCount+' elements')
+      })
+
+    })
 
   })
-
 
 
   //6. Petición de lista de variables

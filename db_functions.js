@@ -7,6 +7,7 @@ var insertVariable = function(db, body, callback) {
   collection.insertOne(body,
     function(err, result) {
     assert.equal(null, err);
+    console.log(result)
     console.log("Inserted 1 document1 into the collection");
     callback(result);
   });
@@ -24,11 +25,12 @@ var insertDevice = function(db, body, callback) {
   });
 }
 
-var insertData = function(db, dataKey, measurementItem, callback) {
+
+var insertData = function(db, dataKey, measurements, callback) {
   // Get the documents collection
   var collection = db.collection(dataKey);
   // Insert some documents
-  collection.insertOne(measurementItem,
+  collection.insertMany(measurements,
     function(err, result) {
     assert.equal(null, err);
     console.log("Inserted 1 document1 into the collection");
