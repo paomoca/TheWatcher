@@ -32,6 +32,8 @@ var insertData = function(db, dataKey, deviceKey, measurements, callback) {
 
   validateKeys(db, dataKey, deviceKey, function(err){
 
+        console.log('validating keys')
+
     if(err) {
       callback(new Error('Invalid Keys'))
     //  console.log(callback.arguments);
@@ -56,17 +58,24 @@ var validateKeys = function(db, dataKey, deviceKey, callback){
   //Checks if variable id exists
   findVariable(db, dataKey, function(result){
 
+    console.log('finding variable')
+
     if(!result) {
       callback(new Error('Unknown dataKey'))
     } else {
       findDevice(db, deviceKey, function(result){
 
+            console.log('finding device')
+
         if(!result) {
           callback(new Error('Unknown deviceKey'))
+        } else {
+          callback(null)
         }
 
       })
     }
+
   })
 
 }

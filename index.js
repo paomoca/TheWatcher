@@ -1,4 +1,3 @@
-
   var express = require('express')
   var MongoClient = require('mongodb').MongoClient
   var assert = require('assert')
@@ -151,6 +150,7 @@
     var dataArray = req.body.payload.data
     var dataKey = req.params.dataKey
 
+
     dataArray.forEach(function(dataItem){
 
       var deviceKey = dataItem.deviceKey
@@ -161,6 +161,7 @@
       })
 
       db_functions.insertData(db, dataKey, deviceKey, measurementsArray, function(err, result) {
+        console.log('here')
         res.send('Good inserted '+result+' elements')
       })
 
