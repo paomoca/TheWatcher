@@ -23,6 +23,10 @@
 
   });
 
+  badRequest = function(res) {
+
+  }
+
   /* API ***********************************************************************************************/
 
   // 1. Nuevo tipo de variable
@@ -102,7 +106,7 @@
   // ]
   // }
   // }
-  app.post('/data', validate({body: schemas.DataSchema}), function (req, res) {
+  app.post('/data', validate({body: schemas.DataSchema}), function (req, res, next) {
 
     var testValue = req.body.payload.data[0].measurements[0].value
     var dataArray = req.body.payload.data
@@ -121,7 +125,11 @@
       })
 
       db_functions.insertData(db, dataKey, deviceKey, measurementsArray, function(err,result) {
-          res.send('Good inserted '+result.insertedCount+' elements')
+        if(err){
+          next(err)
+        } else {
+          res.send('Good inserted '+result+' elements')
+        }
       })
 
     });
@@ -145,7 +153,7 @@
   // ]
   // }
   // }
-  app.post('/data/:dataKey', validate({body: schemas.VariableDataSchema}), function (req, res) {
+  app.post('/data/:dataKey', validate({body: schemas.VariableDataSchema}), function (req, res, next) {
 
     var dataArray = req.body.payload.data
     var dataKey = req.params.dataKey
@@ -161,8 +169,12 @@
       })
 
       db_functions.insertData(db, dataKey, deviceKey, measurementsArray, function(err, result) {
-        console.log('here')
-        res.send('Good inserted '+result+' elements')
+        if(err){
+          next(err)
+        } else {
+          res.send('Good inserted '+result+' elements')
+        }
+
       })
 
     });
@@ -184,7 +196,7 @@
   // ]
   // }
   // }
-  app.post('/data/:dataKey/:deviceKey', validate({body: schemas.DeviceDataSchema}), function (req, res) {
+  app.post('/data/:dataKey/:deviceKey', validate({body: schemas.DeviceDataSchema}), function (req, res, next) {
 
     var dataKey = req.params.dataKey
     var deviceKey = req.params.deviceKey
@@ -200,8 +212,11 @@
       })
 
       db_functions.insertData(db, dataKey, deviceKey, measurementsArray, function(err, result) {
-      //  res.send('Good inserted '+result.insertedCount+' elements')
-      res.send("hola")
+        if(err){
+          next(err)
+        } else {
+          res.send('Good inserted '+result+' elements')
+        }
       })
 
     })
@@ -358,7 +373,7 @@
 
     var responseData;
 
-    if (err.name === 'JsonSchemaValidation') {
+    if (err.name === 'JsonSchemaValidation' || err.name === 'InvalidKeys') {
         // Log the error however you please
         console.log('Bad')
         console.log(err.message);
@@ -371,7 +386,7 @@
         // Format the response body however you want
         responseData = {
            statusText: 'Bad Request',
-           jsonSchemaValidation: true,
+           error: err.name,
            validations: err.validations  // All of your validation information
         };
 

@@ -30,12 +30,15 @@ var insertDevice = function(db, body, callback) {
 var insertData = function(db, dataKey, deviceKey, measurements, callback) {
 
 
-  validateKeys(db, dataKey, deviceKey, function(err){
+  validateKeys(db, dataKey, deviceKey, function(result){
 
-        console.log('validating keys')
+        console.log(result)
 
-    if(err) {
-      callback(new Error('Invalid Keys'))
+    if(!result) {
+      var err = new Error('Invalid Keys')
+      err.name = 'InvalidKeys'
+      err.validations = 'The combination for dataKey and deviceKey is invalid '
+      callback(err)
     //  console.log(callback.arguments);
     } else {
 
@@ -53,32 +56,18 @@ var insertData = function(db, dataKey, deviceKey, measurements, callback) {
 
 }
 
-var validateKeys = function(db, dataKey, deviceKey, callback){
+var validateKeys = function(db, dataKey, deviceKey, callback) {
 
-  //Checks if variable id exists
-  findVariable(db, dataKey, function(result){
+  // Get the documents collection
+  var collection = db.collection('devices')
 
-    console.log('finding variable')
-
-    if(!result) {
-      callback(new Error('Unknown dataKey'))
-    } else {
-      findDevice(db, deviceKey, function(result){
-
-            console.log('finding device')
-
-        if(!result) {
-          callback(new Error('Unknown deviceKey'))
-        } else {
-          callback(null)
-        }
-
-      })
-    }
-
+  // Find some documents
+  collection.findOne({_id: ObjectId(deviceKey), variable_id:dataKey }, function(err, result){
+    callback(result)
   })
 
 }
+
 
 var findVariable = function(db, dataKey, callback) {
   // Get the documents collection
@@ -101,6 +90,8 @@ var findDevice = function(db, deviceKey, callback) {
   })
 
 }
+
+
 
 
 
