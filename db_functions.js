@@ -8,7 +8,6 @@ var insertVariable = function(db, body, callback) {
   collection.insertOne(body,
     function(err, result) {
     assert.equal(null, err);
-    console.log(result)
     console.log("Inserted 1 document1 into the collection");
     callback(result);
   });

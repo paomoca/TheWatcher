@@ -5,7 +5,16 @@
   var bodyParser = require('body-parser')
   var schemas = require('./schemas.js')
   var db_functions = require('./db_functions.js')
+
   var app = express()
+  //var jwt = require('express-jwt')
+
+// var jwtCheck = jwt({
+//   secret: new Buffer('IPX4p3ofCMLuR6k0AWwzkAvb2HicsSsPI9FRR201KHZgtZa10KWcoub2Uu0Cf6wo', 'base64'),
+//   audience: '4qmgJ7ZFCGDjppO2ZOFP2tkSBETCAA3Y'
+// })
+
+//app.use('/variable', jwtCheck);
 
   app.use(bodyParser.json()) // support json encoded bodies
   app.use(bodyParser.urlencoded({ extended: true })) // support encoded bodies
@@ -18,14 +27,47 @@
   // Use connect method to connect to the server
   MongoClient.connect(url, function(err, database) {
     assert.equal(null, err);
-    console.log("Connected successfully to server");
+    console.log("Connected successfully to server")
     db = database
 
   });
 
-  badRequest = function(res) {
+app.get('/test', function(req, res){
 
+
+  var collection = db.collection('582f5239342e940db340b3e7')
+
+  var project = {
+    $project:
+    {
+      time : 1,
+
+      year: { $year: "$date" },
+      month: { $month: "$date"},
+      day: { $dayOfMonth: "$date"},
+      hour: {$hour: "$date"}
+    }
   }
+
+  var match = {
+    $match : { year : 2016, month: 10 }
+  }
+
+      var cursor = collection.aggregate([project,match])
+      //console.log(cursor)
+
+      cursor.toArray(function(err, docs) {
+          console.log(docs)
+          console.log(err)
+
+        });
+  res.send("done")
+
+
+
+
+})
+
 
   /* API ***********************************************************************************************/
 
@@ -121,6 +163,7 @@
         // var time = measurementItem.time
         // var value = measurementItem.value
         measurementItem.deviceKey = deviceKey
+        measurementItem.date = new Date(measurementItem.time)
 
       })
 
@@ -166,6 +209,8 @@
 
       measurementsArray.forEach(function(measurementItem){
         measurementItem.deviceKey = deviceKey
+        measurementItem.date = new Date(measurementItem.time)
+
       })
 
       db_functions.insertData(db, dataKey, deviceKey, measurementsArray, function(err, result) {
@@ -209,6 +254,8 @@
 
       measurementsArray.forEach(function(measurementItem){
         measurementItem.deviceKey = deviceKey
+        measurementItem.date = new Date(measurementItem.time)
+
       })
 
       db_functions.insertData(db, dataKey, deviceKey, measurementsArray, function(err, result) {
