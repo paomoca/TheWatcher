@@ -13,7 +13,9 @@
     "express": "^4.14.0",
     "express-jsonschema": "^1.1.6",
     "express-jwt": "^5.1.0",
-    "mongodb": "^2.2.11"
+    "mongodb": "^2.2.11",
+    "node-cron": "^1.1.2",
+    "simple-statistics": "^2.2.0"
   },
   "devDependencies": {
     "eslint": "^3.10.2",

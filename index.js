@@ -3,8 +3,11 @@ var MongoClient = require('mongodb').MongoClient
 var assert = require('assert')
 var validate = require('express-jsonschema').validate
 var bodyParser = require('body-parser')
+var cron = require('node-cron')
+
 var schemas = require('./schemas.js')
 var db_functions = require('./db_functions.js')
+var cron_functions = require('./cron_functions.js')
 
 var app = express()
 //var jwt = require('express-jwt')
@@ -30,6 +33,14 @@ MongoClient.connect(url, function(err, database) {
   console.log("Connected successfully to server")
   db = database
 
+  cron_functions.hourStatistics(db, function(mess){
+    console.log('++++++++++++++++++++++++++++++'+mess)
+  })
+
+});
+
+cron.schedule('0-59 * * * *', function(){
+  console.log('****************************** running every minute to 1 from '+cron_functions.test);
 });
 
 app.get('/test', function(req, res, next){
@@ -285,6 +296,85 @@ app.post('/data/:dataKey/:deviceKey', validate({body: schemas.DeviceDataSchema})
   })
 
 })
+
+/***************************************************************************/
+app.get('/statistics/year/:dataKey', function(req, res, next){
+
+
+  var collection = db.collection('582f5239342e940db340b3e7')
+
+  var project = {
+    $project:
+    {
+      time : 1,
+      value : 1,
+      _id : 0,
+
+      year: { $year: "$date" },
+      month: { $month: "$date" },
+      day: { $dayOfMonth: "$date" },
+      hour: { $hour: "$date" },
+      minutes: { $minute: "$date" },
+      seconds: { $second: "$date" },
+      milliseconds: { $millisecond: "$date" },
+      dayOfYear: { $dayOfYear: "$date" },
+      dayOfWeek: { $dayOfWeek: "$date" }
+    }
+  }
+
+  var match = {
+    $match : { year : 2016, month: 10 }
+  }
+
+  var project2 = {
+    $project:
+    {
+      time : 1,
+      value : 1,
+      _id : 0,
+    }
+  }
+
+  var cursor = collection.aggregate([project,match, project2])
+  //console.log(cursor)
+
+  cursor.toArray(function(err, docs) {
+    console.log(docs)
+    if(err){
+      next(err)
+    } else {
+      res.send(docs)
+    }
+
+  });
+
+})
+
+app.get('/statistics/month/:dataKey', function(req, res, next){
+
+})
+
+app.get('/statistics/day/:dataKey', function(req, res, next){
+
+})
+
+app.get('/statistics/weekDay/:dataKey', function(req, res, next){
+
+})
+
+app.get('/statistics/weekDay/hour/:dataKey', function(req, res, next){
+
+})
+
+app.get('/statistics/range/day/:dataKey', function(req, res, next){
+
+})
+
+app.get('/statistics/range/day/hour/:dataKey', function(req, res, next){
+
+})
+
+/***************************************************************************/
 
 
 //6. Petición de lista de variables
