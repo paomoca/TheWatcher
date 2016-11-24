@@ -33,11 +33,21 @@ MongoClient.connect(url, function(err, database) {
   console.log("Connected successfully to server")
   db = database
 
-  cron_functions.hourStatistics(db, function(mess){
-    console.log('++++++++++++++++++++++++++++++'+mess)
-  })
+  //Schedule by hour
+  cron.schedule('0 0-23 * * *', function(){
+    console.log('****************************** running every HOUR to 1 from 23 ');
+    cron_functions.hourStatistics(db)
+  });
+
+  cron_functions.hourStatistics(db)
+  cron_functions.dayStatistics(db)
+  cron_functions.monthStatistics(db)
+
+
 
 });
+
+
 
 cron.schedule('0-59 * * * *', function(){
   console.log('****************************** running every minute to 1 from '+cron_functions.test);
@@ -191,7 +201,7 @@ app.post('/data', validate({body: schemas.DataSchema}), function (req, res, next
       // var value = measurementItem.value
       measurementItem.deviceKey = deviceKey
       measurementItem.date = new Date(measurementItem.time)
-
+      console.log(measurementItem.date)
     })
 
     db_functions.insertData(db, dataKey, deviceKey, measurementsArray, function(err,result) {
