@@ -50,7 +50,7 @@ MongoClient.connect(url, function(err, database) {
 
 
 cron.schedule('0-59 * * * *', function(){
-  console.log('****************************** running every minute to 1 from '+cron_functions.test);
+  console.log('****************************** running every minute');
 });
 
 app.get('/test', function(req, res, next){

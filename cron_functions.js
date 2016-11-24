@@ -45,25 +45,24 @@ Date.prototype.day = function() {
 
 Date.prototype.month = function() {
 
-  var prevMonth = this.getMonth() - 1
+  //Months in Javascript Date Object go from 0 to 11 and we want 1 to 12
+  this.prevMonth = this.getMonth()
 
-  if(prevMonth == -1)
-    prevMonth = 11
+  if(this.prevMonth == 0)
+    this.prevMonth = 12
 
   this.simpleTimestamp = new Date(this)
-  this.simpleTimestamp.setMonth(prevMonth)
+  this.simpleTimestamp.setMonth(this.prevMonth)
   this.simpleTimestamp.setDate(1)
   this.simpleTimestamp.setHours(0)
   this.simpleTimestamp.setMinutes(0)
   this.simpleTimestamp.setSeconds(0)
   this.simpleTimestamp.setMilliseconds(0)
 
-  this.day = this.getDate()
-  this.month = this.getMonth()+1
   this.year = this.getFullYear()
 
   console.log('date: '+ this)
-  console.log('prevMonth: '+prevMonth)
+  console.log('prevMonth: '+this.prevMonth)
   console.log('new time: '+ this.simpleTimestamp)
 
 
@@ -204,9 +203,63 @@ var monthStatistics = function(db){
   console.log('MONTH------')
 
   var date = new Date()
-  console.log(date)
-
   date.month()
+
+  var variables = db.collection('variables')
+
+  //Get every variable id and iterate over each result
+  variables.find({}, {_id:1}).forEach(function(doc){
+
+    var id = ObjectId(doc._id).toString()
+    var collection = db.collection(id)
+
+    var project = {
+      $project:
+      {
+        time : 1,
+        value : 1,
+        _id : 0,
+
+        month: { $cond: [{ $ifNull: ['$date', 0] }, { $month: '$date' }, -1] },
+        year: { $cond: [{ $ifNull: ['$date', 0] }, { $year: '$date' }, -1] }
+
+      }
+    }
+
+    var match = {
+      $match : { month: date.prevMonth, year: date.year}
+    }
+
+    var project2 = {
+      $project:
+      {
+        value : 1,
+        _id : 0,
+      }
+    }
+
+    var cursor = collection.aggregate([project,match,project2])
+
+    cursor.toArray(function(err, docs) {
+
+      if(err){
+        console.log(err)
+      } else if(docs.length == 0){
+        console.log('non month')
+
+      } else {
+        var mappedArray = docs.map(function (item) { return item.value; });
+        console.log(mappedArray)
+        var results = generateStatisticsDocument(mappedArray, date)
+        console.log(results)
+
+        db.collection(id+'-day').update({timestamp: date.simpleTimestamp}, results, { upsert: true })
+
+      }
+
+    });
+
+  });
 }
 
 
