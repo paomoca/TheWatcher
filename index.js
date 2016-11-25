@@ -3,11 +3,11 @@ var MongoClient = require('mongodb').MongoClient
 var assert = require('assert')
 var validate = require('express-jsonschema').validate
 var bodyParser = require('body-parser')
-var cron = require('node-cron')
 
 var schemas = require('./schemas.js')
 var db_functions = require('./db_functions.js')
-var cron_functions = require('./cron_functions.js')
+var statistics = require('./statistics-functions.js')
+
 
 var app = express()
 //var jwt = require('express-jwt')
@@ -33,24 +33,6 @@ MongoClient.connect(url, function(err, database) {
   console.log("Connected successfully to server")
   db = database
 
-  //Schedule by hour
-  cron.schedule('0 0-23 * * *', function(){
-    console.log('****************************** running every HOUR to 1 from 23 ');
-    cron_functions.hourStatistics(db)
-  });
-
-  cron_functions.hourStatistics(db)
-  cron_functions.dayStatistics(db)
-  cron_functions.monthStatistics(db)
-
-
-
-});
-
-
-
-cron.schedule('0-59 * * * *', function(){
-  console.log('****************************** running every minute');
 });
 
 app.get('/test', function(req, res, next){
@@ -308,80 +290,50 @@ app.post('/data/:dataKey/:deviceKey', validate({body: schemas.DeviceDataSchema})
 })
 
 /***************************************************************************/
-app.get('/statistics/year/:dataKey', function(req, res, next){
+app.get('/statistics/year/:dataKey', validate({query: schemas.YearSchema}), function(req, res, next){
 
+    console.log('ENTERED')
+    res.send('okk')
 
-  var collection = db.collection('582f5239342e940db340b3e7')
-
-  var project = {
-    $project:
-    {
-      time : 1,
-      value : 1,
-      _id : 0,
-
-      year: { $year: "$date" },
-      month: { $month: "$date" },
-      day: { $dayOfMonth: "$date" },
-      hour: { $hour: "$date" },
-      minutes: { $minute: "$date" },
-      seconds: { $second: "$date" },
-      milliseconds: { $millisecond: "$date" },
-      dayOfYear: { $dayOfYear: "$date" },
-      dayOfWeek: { $dayOfWeek: "$date" }
-    }
-  }
-
-  var match = {
-    $match : { year : 2016, month: 10 }
-  }
-
-  var project2 = {
-    $project:
-    {
-      time : 1,
-      value : 1,
-      _id : 0,
-    }
-  }
-
-  var cursor = collection.aggregate([project,match, project2])
-  //console.log(cursor)
-
-  cursor.toArray(function(err, docs) {
-    console.log(docs)
-    if(err){
-      next(err)
-    } else {
-      res.send(docs)
-    }
-
-  });
 
 })
 
-app.get('/statistics/month/:dataKey', function(req, res, next){
+//Anio
+app.get('/statistics/month/:dataKey', validate({query: schemas.MonthSchema}), function(req, res, next){
+
+  console.log('ENTERED')
+  res.send('okk')
+
+  // statistics.monthStatistics(db, function(err, docs){
+  //
+  // })
+})
+
+app.get('/statistics/day/:dataKey', validate({query: schemas.DaySchema}), function(req, res, next){
+
+  console.log('ENTERED')
+  res.send('okk')
 
 })
 
-app.get('/statistics/day/:dataKey', function(req, res, next){
-
+app.get('/statistics/weekDay/:dataKey', validate({query: schemas.WeekDaySchema}), function(req, res, next){
+  console.log('ENTERED')
+  res.send('okk')
 })
 
-app.get('/statistics/weekDay/:dataKey', function(req, res, next){
-
+app.get('/statistics/weekDay/hour/:dataKey', validate({query: schemas.WeekDayHourSchema}), function(req, res, next){
+  console.log('ENTERED')
+  res.send('okk')
 })
 
-app.get('/statistics/weekDay/hour/:dataKey', function(req, res, next){
-
+app.get('/statistics/range/day/:dataKey', validate({query: schemas.RangeDaySchema}), function(req, res, next){
+  console.log('ENTERED')
+  res.send('okk')
 })
 
-app.get('/statistics/range/day/:dataKey', function(req, res, next){
-
-})
-
-app.get('/statistics/range/day/hour/:dataKey', function(req, res, next){
-
+app.get('/statistics/range/day/hour/:dataKey', validate({query: schemas.RangeDayHourSchema}), function(req, res, next){
+  console.log('ENTERED')
+  res.send('okk')
 })
 
 /***************************************************************************/
@@ -530,16 +482,16 @@ app.get('/', function (req, res) {
 //Handle errors
 app.use(function (err, req, res, next) {
   // logic
-  console.log('error '+err.name)
-  console.log(err)
-  console.log(JSON.stringify(err))
+  // console.log('error '+err.name)
+  // console.log(err)
+  // console.log(JSON.stringify(err))
 
   var responseData;
 
   if (err.name === 'JsonSchemaValidation' || err.name === 'InvalidKeys') {
     // Log the error however you please
-    console.log('Bad')
-    console.log(err.message);
+  //  console.log('Bad')
+  //  console.log(err.message);
     // logs "express-jsonschema: Invalid data found"
 
     // Set a bad request http response status or whatever you want
@@ -553,14 +505,8 @@ app.use(function (err, req, res, next) {
       validations: err.validations  // All of your validation information
     };
 
-    // Take into account the content type if your app serves various content types
-    if (req.xhr || req.get('Content-Type') === 'application/json') {
-      res.json(responseData);
-    } else {
-      // If this is an html request then you should probably have
-      // some type of Bad Request html template to respond with
-      res.render('badrequestTemplate', responseData);
-    }
+    res.json(responseData);
+
   } else {
     // pass error to next error middleware handler
     //  next(err);

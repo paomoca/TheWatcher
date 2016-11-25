@@ -4,7 +4,8 @@
   "description": "Tesis 2016",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "node_modules/nodemon/bin/nodemon.js index.js"
   },
   "author": "paomoca",
   "license": "ISC",
@@ -14,7 +15,6 @@
     "express-jsonschema": "^1.1.6",
     "express-jwt": "^5.1.0",
     "mongodb": "^2.2.11",
-    "node-cron": "^1.1.2",
     "simple-statistics": "^2.2.0"
   },
   "devDependencies": {
