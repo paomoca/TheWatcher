@@ -338,6 +338,8 @@ var monthPattern = '^[1-9]$|^[1][0-2]$'
 var dayPattern = '^[1-9]$|^[1-2]\\d$|^[3][0-1]$'
 var hourPattern = '^[1-9]$|^[1]\\d$|^[2][0-4]$'
 var weekDayPattern = '^[1-7]$'
+var offsetPattern = '^[1-9]$|^\\d\\d$|^[1-7]\\d\\d$|^[1-8][0-3]\\d$|^[1-8][4][0]$|^[-][1-9]$|^[-]\\d\\d$|^[-][1-6]\\d\\d$|^[-][1-7][2][0]$'
+var millisecondsPattern = '^\\d+$'
 
 var YearSchema = {
 
@@ -427,6 +429,10 @@ var WeekDayHourSchema = {
       pattern: hourPattern,
       required: true
     },
+    offset: {
+      pattern: offsetPattern,
+      required: false
+    },
     weekDay: {
       pattern: weekDayPattern,
       required: true
@@ -447,28 +453,12 @@ var RangeDaySchema = {
 
   type: 'object',
   properties: {
-    day1: {
-      pattern: dayPattern,
+    date1: {
+      pattern: millisecondsPattern,
       required: true
     },
-    month1: {
-      pattern: monthPattern,
-      required: true
-    },
-    year1: {
-      pattern: yearPattern,
-      required: true
-    },
-    day2: {
-      pattern: dayPattern,
-      required: true
-    },
-    month2: {
-      pattern: monthPattern,
-      required: true
-    },
-    year2: {
-      pattern: yearPattern,
+    date2: {
+      pattern: millisecondsPattern,
       required: true
     },
     type: {
@@ -483,36 +473,20 @@ var RangeDayHourSchema = {
 
   type: 'object',
   properties: {
-    hour1: {
+    hour: {
       pattern: hourPattern,
       required: true
     },
-    day1: {
-      pattern: dayPattern,
+    offset: {
+      pattern: offsetPattern,
+      required: false
+    },
+    date1: {
+      pattern: millisecondsPattern,
       required: true
     },
-    month1: {
-      pattern: monthPattern,
-      required: true
-    },
-    year1: {
-      pattern: yearPattern,
-      required: true
-    },
-    hour2: {
-      pattern: hourPattern,
-      required: true
-    },
-    day2: {
-      pattern: dayPattern,
-      required: true
-    },
-    month2: {
-      pattern: monthPattern,
-      required: true
-    },
-    year2: {
-      pattern: yearPattern,
+    date2: {
+      pattern: millisecondsPattern,
       required: true
     },
     type: {
@@ -522,6 +496,8 @@ var RangeDayHourSchema = {
   }
 
 }
+
+
 
 exports.StreetSchema = StreetSchema;
 exports.VariableSchema = VariableSchema;

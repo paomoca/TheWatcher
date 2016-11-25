@@ -7,7 +7,8 @@ var bodyParser = require('body-parser')
 var schemas = require('./schemas.js')
 var db_functions = require('./db_functions.js')
 var statistics = require('./statistics-functions.js')
-
+var statistics_queries = require('./statistics-queries.js')
+var date_validations = require('./date-validations.js')
 
 var app = express()
 //var jwt = require('express-jwt')
@@ -35,60 +36,7 @@ MongoClient.connect(url, function(err, database) {
 
 });
 
-app.get('/test', function(req, res, next){
-
-
-  var collection = db.collection('582f5239342e940db340b3e7')
-
-  var project = {
-    $project:
-    {
-      time : 1,
-      value : 1,
-      _id : 0,
-
-      year: { $year: "$date" },
-      month: { $month: "$date" },
-      day: { $dayOfMonth: "$date" },
-      hour: { $hour: "$date" },
-      minutes: { $minute: "$date" },
-      seconds: { $second: "$date" },
-      milliseconds: { $millisecond: "$date" },
-      dayOfYear: { $dayOfYear: "$date" },
-      dayOfWeek: { $dayOfWeek: "$date" }
-    }
-  }
-
-  var match = {
-    $match : { year : 2016, month: 10 }
-  }
-
-  var project2 = {
-    $project:
-    {
-      time : 1,
-      value : 1,
-      _id : 0,
-    }
-  }
-
-  var cursor = collection.aggregate([project,match, project2])
-  //console.log(cursor)
-
-  cursor.toArray(function(err, docs) {
-    console.log(docs)
-    if(err){
-      next(err)
-    } else {
-      res.send(docs)
-    }
-
-  });
-
-})
-
-
-/* API ***********************************************************************************************/
+/* API PANEL ADMINISTRADOR ***********************************************************************************************/
 
 // 1. Nuevo tipo de variable
 
@@ -151,6 +99,33 @@ app.post('/device', validate({body: schemas.DeviceSchema}), function (req, res) 
   })
 
 })
+
+//6. Petición de lista de variables
+app.get('/variables', function (req, res) {
+  //  res.status(201)
+  res.send('Hello World! ')
+})
+
+// 7. Petición de la información de una variable en específico
+app.get('/variable/:variable_id', function (req, res) {
+  //  res.status(201)
+  res.send('Hello World! ')
+})
+
+// 8. Petición de lista de dispositivos: de una variable en específico
+app.get('/devices/:variable', function (req, res) {
+  //  res.status(201)
+  res.send('Hello World! ')
+})
+
+// Petición de la información de un device en específico
+app.get('/device/:device_id', function (req, res) {
+
+  res.send('Hello World! ')
+
+})
+
+/* API INSERCION DE MEDICIONES **************************************************************************/
 
 
 // 3. Inserción de múltiples mediciones: cualquier variable, cualquier dispositivo
@@ -289,77 +264,143 @@ app.post('/data/:dataKey/:deviceKey', validate({body: schemas.DeviceDataSchema})
 
 })
 
-/***************************************************************************/
+/* API ESTADISTICAS ***************************************************************************/
+
+// 1. ANIO
 app.get('/statistics/year/:dataKey', validate({query: schemas.YearSchema}), function(req, res, next){
 
-    console.log('ENTERED')
-    res.send('okk')
+  statistics_queries.queryYear(db, req.query, req.params.dataKey, function(err, docs){
 
+    if(err){
+      next(err)
+    } else {
+      res.send(docs)
+    }
+
+  })
 
 })
 
-//Anio
+// 2. MES
 app.get('/statistics/month/:dataKey', validate({query: schemas.MonthSchema}), function(req, res, next){
 
-  console.log('ENTERED')
-  res.send('okk')
+  statistics_queries.queryMonth(db, req.query, req.params.dataKey, function(err, docs){
 
-  // statistics.monthStatistics(db, function(err, docs){
-  //
-  // })
+    if(err){
+      next(err)
+    } else {
+      res.send(docs)
+    }
+
+  })
+
+  //dayOfWeek: { $dayOfWeek: "$date" }
+
 })
 
+// 3. DIA
 app.get('/statistics/day/:dataKey', validate({query: schemas.DaySchema}), function(req, res, next){
 
-  console.log('ENTERED')
-  res.send('okk')
+  statistics_queries.queryDay(db, req.query, req.params.dataKey, function(err, docs){
+
+    if(err){
+      next(err)
+    } else {
+      res.send(docs)
+    }
+
+  })
 
 })
 
+// 4. WEEKDAY
 app.get('/statistics/weekDay/:dataKey', validate({query: schemas.WeekDaySchema}), function(req, res, next){
-  console.log('ENTERED')
-  res.send('okk')
+
+  statistics_queries.queryWeekDay(db, req.query, req.params.dataKey, function(err, docs){
+
+    if(err){
+      next(err)
+    } else {
+      res.send(docs)
+    }
+
+  })
+
 })
 
+// 5. WEEKDAY HOUR
 app.get('/statistics/weekDay/hour/:dataKey', validate({query: schemas.WeekDayHourSchema}), function(req, res, next){
-  console.log('ENTERED')
-  res.send('okk')
+
+
+  console.log(parseInt('-6'));
+  statistics_queries.queryWeekDayHour(db, req.query, req.params.dataKey, function(err, docs){
+
+    if(err){
+      next(err)
+    } else {
+      res.send(docs)
+    }
+
+  })
+
 })
 
-app.get('/statistics/range/day/:dataKey', validate({query: schemas.RangeDaySchema}), function(req, res, next){
-  console.log('ENTERED')
-  res.send('okk')
+// 6. RANGE DAY
+app.get('/statistics/range/day/:dataKey', validate({query: schemas.RangeDaySchema}),  function(req, res, next){
+
+
+    date_validations.dateRangeValidation(req.query.date1, req.query.date2, function(err){
+
+      if(!err){
+        statistics_queries.queryRangeDay(db, req.query, req.params.dataKey, function(err, docs){
+
+          if(err){
+            next(err)
+          } else {
+            res.send(docs)
+          }
+
+        })
+
+      } else {
+        next(err)
+      }
+    })
+
 })
 
+// 7. RANGE DAY HOUR
 app.get('/statistics/range/day/hour/:dataKey', validate({query: schemas.RangeDayHourSchema}), function(req, res, next){
-  console.log('ENTERED')
-  res.send('okk')
+
+  date_validations.dateRangeValidation(req.query.date1, req.query.date2, function(err){
+
+    if(!err){
+      statistics_queries.queryRangeDayHour(db, req.query, req.params.dataKey, function(err, docs){
+
+        if(err){
+          next(err)
+        } else {
+          res.send(docs)
+        }
+
+      })
+
+    } else {
+      next(err)
+    }
+  })
+
+
 })
 
 /***************************************************************************/
 
 
-//6. Petición de lista de variables
-app.get('/variables', function (req, res) {
-  //  res.status(201)
-  res.send('Hello World! ')
-})
 
-// 7. Petición de la información de una variable en específico
-app.get('/variable/:variable_id', function (req, res) {
-  //  res.status(201)
-  res.send('Hello World! ')
-})
 
-// 8. Petición de lista de dispositivos: de una variable en específico
-app.get('/devices/:variable', function (req, res) {
-  //  res.status(201)
-  res.send('Hello World! ')
-})
 
 // 9. Peticiones de datos crudos: Restringidas a la API privada
 app.get('/data', validate({query: schemas.GetDataSchema}),  function (req, res) {
-
 
   res.send('Good')
 })
@@ -488,10 +529,10 @@ app.use(function (err, req, res, next) {
 
   var responseData;
 
-  if (err.name === 'JsonSchemaValidation' || err.name === 'InvalidKeys') {
+  if (err.name === 'JsonSchemaValidation' || err.name === 'InvalidKeys' || err.name === 'InvalidDateRange') {
     // Log the error however you please
-  //  console.log('Bad')
-  //  console.log(err.message);
+    //  console.log('Bad')
+    //  console.log(err.message);
     // logs "express-jsonschema: Invalid data found"
 
     // Set a bad request http response status or whatever you want
