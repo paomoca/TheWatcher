@@ -61,7 +61,7 @@ var validateKeys = function(db, dataKey, deviceKey, callback) {
   var collection = db.collection('devices')
 
   // Find some documents
-  collection.findOne({_id: ObjectId(deviceKey), variable_id:dataKey }, function(err, result){
+  collection.findOne({ _id: ObjectId(deviceKey), variable_id:dataKey }, function(err, result){
     callback(result)
   })
 
@@ -69,10 +69,9 @@ var validateKeys = function(db, dataKey, deviceKey, callback) {
 
 
 var findVariable = function(db, dataKey, callback) {
-  // Get the documents collection
+
   var collection = db.collection('variables')
 
-  // Find some documents
   collection.findOne({_id: ObjectId(dataKey)}, function(err, res){
     callback(err, res)
   })
@@ -187,3 +186,5 @@ exports.removeDocument = removeDocument;
 
 exports.findAllVariables = findAllVariables;
 exports.findVariableDevices = findVariableDevices;
+exports.findVariable = findVariable;
+exports.findDevice = findDevice;
