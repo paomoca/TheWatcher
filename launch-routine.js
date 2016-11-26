@@ -1,6 +1,15 @@
 var ObjectId = require('mongodb').ObjectID
 var statistics = require('./statistics-functions.js')
 
+/*Inicia en launch(), por cada variable en la db realiza las siguientes acciones:
+
+  1. Loop desde el anio inicial (2016) hasta el anio actual
+  2. Para cada anio que existe genera las estadisticas del anio (1 valor por mes) y hace un loop de sus meses
+  3. Para cada mes que exista genera las estadisticas del mes (1 valor por dia) y hace un loop de sus dias 
+  4. Para cada dia que exista genera las estadisticas del dia (1 valor por hora)
+
+*/
+
 //1 Enero 2016 00:00
 var minUTCTimestamp = 1451606400000
 var minUTC = new Date(minUTCTimestamp)
