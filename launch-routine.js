@@ -52,6 +52,7 @@ var launch = function(db){
   var year = new Date().getUTCFullYear()
   var variables = db.collection('variables')
 
+  //Se obtiene cada una de las variables registradas en la base de datos
   variables.find({}, {_id:1}).forEach(function(doc){
 
     var id = ObjectId(doc._id).toString()
@@ -79,7 +80,7 @@ var yearLoop = function(collection, id, y){
 
      for(var m = 1; m <= 12; m++){
 
-      statistics.yearStatistics(db, y, m)
+      statistics.yearStatistics(db, id, y, m)
       monthLoop(collection, id, y, m)
 
      }
@@ -98,9 +99,10 @@ var monthLoop = function(collection, id, y, m){
 
       console.log('       '+id+'---- '+'m:'+m+' '+docs.length)
 
-       for(var d = 1; d <= 31; d++){
+      for(var d = 1; d <= 31; d++){
 
-       dayLoop(collection, id, y, m, d)
+        statistics.monthStatistics(db, id, y, m, d)
+        dayLoop(collection, id, y, m, d)
 
      }
     }
@@ -118,9 +120,9 @@ var dayLoop = function(collection, id, y, m, d){
       
       console.log('                    '+id+'---- '+'d:'+d+' '+docs.length)
 
-       for(var h = 0; h <= 24; h++){
+      for(var h = 0; h <= 24; h++){
 
-       hourLoop(collection, id, y, m, d, h)
+        statistics.dayStatistics(db, id, y, m, d, h)
 
      }
     }
@@ -130,20 +132,6 @@ var dayLoop = function(collection, id, y, m, d){
 
 }
 
-var hourLoop = function(collection, id, y, m, d, h){
-
-
-  collection.aggregate([projectH,{$match : { year: y, month: m, day: d, hour: h }}]).toArray(function(err, docs) {
-
-    if(docs.length != 0){
-      
-      console.log('                                    '+id+'---- '+'h:'+h+' '+docs.length)
-
-    }
-
-  })
-
-}
 
 var hourRoutine = function(db){
 
