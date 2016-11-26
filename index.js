@@ -270,6 +270,7 @@ app.post('/data/:dataKey/:deviceKey', validate({body: schemas.DeviceDataSchema})
 /* API ESTADISTICAS ***************************************************************************/
 
 // 1. ANIO
+//Prueba: localhost:3000/statistics/year/582b7288009e5750e40a43ac?year=2016&type=mean
 app.get('/statistics/year/:dataKey', validate({query: schemas.YearSchema}), function(req, res, next){
 
   statistics_queries.queryYear(db, req.query, req.params.dataKey, function(err, docs){
@@ -285,6 +286,7 @@ app.get('/statistics/year/:dataKey', validate({query: schemas.YearSchema}), func
 })
 
 // 2. MES
+//Prueba: localhost:3000/statistics/month/582b7288009e5750e40a43ac?year=2016&month=3&type=mean
 app.get('/statistics/month/:dataKey', validate({query: schemas.MonthSchema}), function(req, res, next){
 
   statistics_queries.queryMonth(db, req.query, req.params.dataKey, function(err, docs){
@@ -297,11 +299,10 @@ app.get('/statistics/month/:dataKey', validate({query: schemas.MonthSchema}), fu
 
   })
 
-  //dayOfWeek: { $dayOfWeek: "$date" }
-
 })
 
 // 3. DIA
+//Prueba: localhost:3000/statistics/day/582b7288009e5750e40a43ac?year=2016&month=3&day=20&type=mean
 app.get('/statistics/day/:dataKey', validate({query: schemas.DaySchema}), function(req, res, next){
 
   statistics_queries.queryDay(db, req.query, req.params.dataKey, function(err, docs){
@@ -317,6 +318,7 @@ app.get('/statistics/day/:dataKey', validate({query: schemas.DaySchema}), functi
 })
 
 // 4. WEEKDAY
+//Prueba: localhost:3000/statistics/weekDay/582b7288009e5750e40a43ac?year=2016&weekDay=1&type=mean
 app.get('/statistics/weekDay/:dataKey', validate({query: schemas.WeekDaySchema}), function(req, res, next){
 
   statistics_queries.queryWeekDay(db, req.query, req.params.dataKey, function(err, docs){
@@ -332,6 +334,8 @@ app.get('/statistics/weekDay/:dataKey', validate({query: schemas.WeekDaySchema})
 })
 
 // 5. WEEKDAY HOUR
+// Prueba: localhost:3000/statistics/weekDay/hour/582b7288009e5750e40a43ac?year=2016&weekDay=1&hour=19&type=mean
+//Prueba con timezone offset: localhost:3000/statistics/weekDay/hour/582b7288009e5750e40a43ac?year=2016&weekDay=1&hour=13&offset=360&type=mean
 app.get('/statistics/weekDay/hour/:dataKey', validate({query: schemas.WeekDayHourSchema}), function(req, res, next){
 
 
@@ -349,6 +353,7 @@ app.get('/statistics/weekDay/hour/:dataKey', validate({query: schemas.WeekDayHou
 })
 
 // 6. RANGE DAY
+//Prueba: localhost:3000/statistics/range/day/582b7288009e5750e40a43ac?date2=1480194323000&date1=1451606400000&type=mean
 app.get('/statistics/range/day/:dataKey', validate({query: schemas.RangeDaySchema}),  function(req, res, next){
 
 
@@ -373,6 +378,8 @@ app.get('/statistics/range/day/:dataKey', validate({query: schemas.RangeDaySchem
 })
 
 // 7. RANGE DAY HOUR
+//Prueba: localhost:3000/statistics/range/day/hour/582b7288009e5750e40a43ac?date2=1480194323000&date1=1451606400000&hour=10&type=mean
+//Prueba con timezone offset: localhost:3000/statistics/range/day/hour/582b7288009e5750e40a43ac?date2=1480194323000&date1=1451606400000&hour=4&offset=360&type=mean
 app.get('/statistics/range/day/hour/:dataKey', validate({query: schemas.RangeDayHourSchema}), function(req, res, next){
 
   date_validations.dateRangeValidation(req.query.date1, req.query.date2, function(err){
@@ -397,8 +404,6 @@ app.get('/statistics/range/day/hour/:dataKey', validate({query: schemas.RangeDay
 })
 
 /***************************************************************************/
-
-
 
 
 
@@ -474,27 +479,7 @@ app.get('/statistics/:dataKey/:deviceKey', validate({query: schemas.GetStatistic
 
 /******************************************************************************************************/
 
-// // This route validates req.body against the StreetSchema
-// app.post('/street', validate({body: schemas.StreetSchema}), function(req, res) {
-//     // At this point req.body has been validated and you can
-//     // begin to execute your application code
-//     res.send('Good')
-// })
-//
-//
-app.get('/', function (req, res) {
-  //  res.status(201)
-  res.send('Hello World! ')
-})
 
-// app.get('/:pao/:juan/:diego', function (req, res) {
-//   res.send(req.params)
-// })
-//
-// app.post('/', function (req, res) {
-//   res.send('Got a POST request'+req.body)
-// })
-//
 // app.put('/user', function (req, res) {
 //   res.send('Got a PUT request at /user')
 // })
@@ -503,23 +488,7 @@ app.get('/', function (req, res) {
 //   res.send('Got a DELETE request at /user')
 // })
 //
-//   var TokenSchema = {
-//     type: 'object',
-//     properties: {
-//         token: {
-//             type: 'string',
-//             format: 'alphanumeric',
-//             minLength: 10,
-//             maxLength: 10,
-//             required: true
-//         }
-//     }
-// }
-//
-// app.get('/streets/', validate({query: TokenSchema}), function(req, res) {
-//     // application code
-//     res.send(req.query)
-// });
+
 
 
 

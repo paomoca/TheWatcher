@@ -79,7 +79,7 @@ var queryMonth = function (db, query, id, callback){
 //Results for every hour of that day
 var queryDay = function (db, query, id, callback){
 
-  var collection = db.collection(id+'-hour')
+  var collection = db.collection(id+'-hours')
 
   var project = {
     $project:
@@ -165,7 +165,7 @@ var queryWeekDayHour = function (db, query, id, callback){
 
   console.log('Converted to UTC == '+UTCHour);
 
-  var collection = db.collection(id+'-hour')
+  var collection = db.collection(id+'-hours')
 
   var project = {
     $project:
@@ -240,7 +240,7 @@ var queryRangeDayHour = function (db, query, id, callback){
 
   console.log('Converted to UTC == '+UTCHour);
 
-  var collection = db.collection(id+'-hour')
+  var collection = db.collection(id+'-hours')
 
   var project = {
     $project:
