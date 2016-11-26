@@ -33,6 +33,19 @@ var projectD = {
   }
 }
 
+var projectH = {
+  $project:
+  {
+    _id : 0,
+    hour: { $cond: [{ $ifNull: ['$date', 0] }, { $hour: '$date' }, -1] },
+    day: { $cond: [{ $ifNull: ['$date', 0] }, { $dayOfMonth: '$date' }, -1] },
+    month: { $cond: [{ $ifNull: ['$date', 0] }, { $month: '$date' }, -1] },
+    year: { $cond: [{ $ifNull: ['$date', 0] }, { $year: '$date' }, -1] }
+  }
+}
+
+
+
 var launch = function(db){
 
   var minYear = minUTC.getUTCFullYear()
@@ -46,7 +59,6 @@ var launch = function(db){
 
     //Checa year
     for(var y = minYear; y <= year; y++){
-
 
       yearLoop(collection, id, y)
 
@@ -67,7 +79,8 @@ var yearLoop = function(collection, id, y){
 
      for(var m = 1; m <= 12; m++){
 
-       monthLoop(collection, id, y, m)
+      statistics.yearStatistics(db, y, m)
+      monthLoop(collection, id, y, m)
 
      }
 
@@ -82,7 +95,50 @@ var monthLoop = function(collection, id, y, m){
   collection.aggregate([projectM,{$match : { year: y, month: m }}]).toArray(function(err, docs) {
 
     if(docs.length != 0){
-      console.log('             ---- '+'m:'+m+' '+docs.length)
+
+      console.log('       '+id+'---- '+'m:'+m+' '+docs.length)
+
+       for(var d = 1; d <= 31; d++){
+
+       dayLoop(collection, id, y, m, d)
+
+     }
+    }
+
+  })
+
+}
+
+var dayLoop = function(collection, id, y, m, d){
+
+
+  collection.aggregate([projectD,{$match : { year: y, month: m, day: d }}]).toArray(function(err, docs) {
+
+    if(docs.length != 0){
+      
+      console.log('                    '+id+'---- '+'d:'+d+' '+docs.length)
+
+       for(var h = 0; h <= 24; h++){
+
+       hourLoop(collection, id, y, m, d, h)
+
+     }
+    }
+
+  })
+
+
+}
+
+var hourLoop = function(collection, id, y, m, d, h){
+
+
+  collection.aggregate([projectH,{$match : { year: y, month: m, day: d, hour: h }}]).toArray(function(err, docs) {
+
+    if(docs.length != 0){
+      
+      console.log('                                    '+id+'---- '+'h:'+h+' '+docs.length)
+
     }
 
   })

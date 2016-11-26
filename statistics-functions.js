@@ -13,9 +13,9 @@ var projectValue = {
   }
 }
 
-var hourStatistics = function(db){
+var dayStatistics = function(db){
 
-  console.log('HOUR -------')
+  console.log('Day 24 hrs -------')
 
   var startHour = minUTCTimestamp
   var finalHour = new Date().getTime()
@@ -78,9 +78,9 @@ var hourStatistics = function(db){
 
 }
 
-var dayStatistics = function(db, date){
+var monthStatistics = function(db, date){
 
-  console.log('DAY-------')
+  console.log('Month 31 days -------')
 
   var variables = db.collection('variables')
 
@@ -126,9 +126,13 @@ var dayStatistics = function(db, date){
   });
 }
 
-var monthStatistics = function(db, date){
+var yearStatistics = function(db, y, m){
 
+  console.log('Year 12 months -------')
 
+  var timestamp = new Date(minUTCTimestamp)
+  timestamp.setUTCFullYear(y)
+  timestamp.setUTCMonth(m-1)
 
   var variables = db.collection('variables')
 
@@ -152,7 +156,7 @@ var monthStatistics = function(db, date){
     }
 
     var match = {
-      $match : { month: date.getUTCMonth(), year: date.getUTCFullYear()}
+      $match : { year: y, month: m }
     }
 
     var cursor = collection.aggregate([project,match,projectValue]).toArray(function(err, docs) {
@@ -160,10 +164,12 @@ var monthStatistics = function(db, date){
        if(docs.length != 0){
 
         var mappedArray = docs.map(function (item) { return item.value; });
-        var results = generateStatisticsDocument(mappedArray, date)
+        var results = generateStatisticsDocument(mappedArray, timestamp)
 
-        db.collection(id+'-month').update({timestamp: date.simpleTimestamp}, results, { upsert: true }, function(err,res){
-          console.log(id+'-----'+res.result.nModified+' ---DATE: '+date.toUTCString());
+        db.collection(id+'-month').update({timestamp: timestamp}, results, { upsert: true }, function(err,res){
+
+          console.log(id+'-----'+res.result.nModified+' ---'+' Y: '+y+' M: '+m+'  '+timestamp.toUTCString());
+
         })
 
       }
@@ -201,11 +207,11 @@ var create = function(cursor, date, id, type, callback){
 }
 
 
-var generateStatisticsDocument = function(array, date){
+var generateStatisticsDocument = function(array, timestamp){
 
   var results = {}
 
-  results.timestamp = date.simpleTimestamp
+  results.timestamp = timestamp
   results.mean = statistics.mean(array)
   results.mode = statistics.mode(array)
   results.median = statistics.median(array)
@@ -216,6 +222,6 @@ var generateStatisticsDocument = function(array, date){
 
 }
 
+exports.yearStatistics = yearStatistics
 exports.monthStatistics = monthStatistics
 exports.dayStatistics = dayStatistics
-exports.hourStatistics = hourStatistics

@@ -134,7 +134,7 @@ app.get('/device/:device_id', function (req, res) {
 // 3. Inserción de múltiples mediciones: cualquier variable, cualquier dispositivo
 
 //Prueba
-//{
+// {
 // "payload": {
 // "data": [
 // {
