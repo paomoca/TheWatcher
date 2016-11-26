@@ -117,39 +117,6 @@ var findVariableDevices = function(db, dataKey, callback){
 
 /***************************************************************************/
 
-
-
-
-
-//TEST
-
-var insertDocuments = function(db, callback) {
-  // Get the documents collection
-  var collection = db.collection('documents');
-  // Insert some documents
-  collection.insertMany([
-    {a : 4}, {a : 5}, {a : 6}
-  ], function(err, result) {
-    assert.equal(err, null);
-    assert.equal(3, result.result.n);
-    assert.equal(3, result.ops.length);
-    console.log("Inserted 3 documents into the collection");
-    callback(result);
-  });
-}
-
-var findDocuments = function(db, callback) {
-  // Get the documents collection
-  var collection = db.collection('documents');
-  // Find some documents
-  collection.find({'a': 4}).toArray(function(err, docs) {
-    assert.equal(err, null);
-    console.log("Found the following records");
-    console.log(docs);
-    callback(docs);
-  });
-}
-
 var updateDocument = function(db, callback) {
   // Get the documents collection
   var collection = db.collection('documents');
@@ -179,12 +146,10 @@ exports.insertVariable = insertVariable;
 exports.insertDevice = insertDevice;
 exports.insertData = insertData;
 
-exports.insertDocuments = insertDocuments;
-exports.findDocuments = findDocuments;
-exports.updateDocument = updateDocument;
-exports.removeDocument = removeDocument;
-
 exports.findAllVariables = findAllVariables;
 exports.findVariableDevices = findVariableDevices;
 exports.findVariable = findVariable;
 exports.findDevice = findDevice;
+
+exports.updateDocument = updateDocument;
+exports.removeDocument = removeDocument;

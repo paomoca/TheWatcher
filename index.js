@@ -432,8 +432,6 @@ app.get('/statistics/range/day/hour/:dataKey', validate({query: schemas.RangeDay
 
 /***************************************************************************/
 
-
-
 // 9. Peticiones de datos crudos: Restringidas a la API privada
 app.get('/data', validate({query: schemas.GetDataSchema}),  function (req, res) {
 
