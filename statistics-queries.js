@@ -276,19 +276,6 @@ var queryRangeDayHour = function (db, query, id, callback){
     callback(err, docs)
   });
 
-  // var match = {
-  //   $match : {
-  //     $and: [
-  //     { hour: query.hour },
-  //     {timestamp: { $gte: new Date(parseInt(query.date1)) } },
-  //     {timestamp: { $lte: new Date(parseInt(query.date2)) } }
-  //   ]}
-  // }
-
-
-
-
-
 }
 
 exports.queryYear = queryYear

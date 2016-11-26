@@ -1,6 +1,10 @@
 var ObjectId = require('mongodb').ObjectID
 var statistics = require('simple-statistics')
 
+//1 Enero 2016 00:00
+var minUTCTimestamp = 1451606400000
+var minUTC = new Date(minUTCTimestamp)
+
 var projectValue = {
   $project:
   {
@@ -9,9 +13,27 @@ var projectValue = {
   }
 }
 
-var hourStatistics = function(db, date){
+var hourStatistics = function(db){
 
-  console.log('HOUR-------')
+  console.log('HOUR -------')
+
+  var startHour = minUTCTimestamp
+  var finalHour = new Date().getTime()
+
+  var project = {
+    $project:
+    {
+      time : 1,
+      value : 1,
+      _id : 0,
+
+      hour: { $cond: [{ $ifNull: ['$date', 0] }, { $hour: '$date' }, -1] },
+      day: { $cond: [{ $ifNull: ['$date', 0] }, { $dayOfMonth: '$date' }, -1] },
+      month: { $cond: [{ $ifNull: ['$date', 0] }, { $month: '$date' }, -1] },
+      year: { $cond: [{ $ifNull: ['$date', 0] }, { $year: '$date' }, -1] }
+
+    }
+  }
 
   var variables = db.collection('variables')
 
@@ -21,28 +43,36 @@ var hourStatistics = function(db, date){
     var id = ObjectId(doc._id).toString()
     var collection = db.collection(id)
 
-    var project = {
-      $project:
-      {
-        time : 1,
-        value : 1,
-        _id : 0,
+    for(var h = startHour; h <= finalHour; h = h+1*60*60*1000){
 
-        hour: { $cond: [{ $ifNull: ['$date', 0] }, { $hour: '$date' }, -1] },
-        day: { $cond: [{ $ifNull: ['$date', 0] }, { $dayOfMonth: '$date' }, -1] },
-        month: { $cond: [{ $ifNull: ['$date', 0] }, { $month: '$date' }, -1] },
-        year: { $cond: [{ $ifNull: ['$date', 0] }, { $year: '$date' }, -1] }
+      var date = new Date(h)
 
+      var match = {
+        $match : { hour : date.getUTCHours(), day: date.getUTCDate(), month: date.getUTCMonth()+1, year: date.getUTCFullYear()}
       }
+
+      var cursor = collection.aggregate([project,match,projectValue]).toArray(function(err, docs) {
+
+         if(docs.length != 0){
+
+          var mappedArray = docs.map(function (item) { return item.value; });
+          var results = generateStatisticsDocument(mappedArray, date)
+
+          db.collection(id+'-hour').update({timestamp: date.simpleTimestamp}, results, { upsert: true }, function(err,res){
+            console.log(id+'-----'+res.result.nModified+' ---DATE: '+date.toUTCString());
+          })
+
+        } else {
+          console.log('no docs');
+        }
+
+      });
+
+
     }
 
-    var match = {
-      $match : { hour : date.matchTo.hour, day: date.matchTo.day, month: date.matchTo.month, year: date.matchTo.year}
-    }
 
-    var cursor = collection.aggregate([project,match,projectValue])
 
-    create(cursor, date, id, "hour")
 
   });
 
@@ -75,19 +105,30 @@ var dayStatistics = function(db, date){
     }
 
     var match = {
-      $match : {day: date.matchTo.day, month: date.matchTo.month, year: date.matchTo.year}
+      $match : { day: date.getUTCDate(), month: date.getUTCMonth(), year: date.getUTCFullYear()}
     }
 
-    var cursor = collection.aggregate([project,match,projectValue])
+    var cursor = collection.aggregate([project,match,projectValue]).toArray(function(err, docs) {
 
-    create(cursor, date, id, "day")
+       if(docs.length != 0){
+
+        var mappedArray = docs.map(function (item) { return item.value; });
+        var results = generateStatisticsDocument(mappedArray, date)
+
+        db.collection(id+'-day').update({timestamp: date.simpleTimestamp}, results, { upsert: true }, function(err,res){
+          console.log(id+'-----'+res.result.nModified+' ---DATE: '+date.toUTCString());
+        })
+
+      }
+
+    });
 
   });
 }
 
 var monthStatistics = function(db, date){
 
-  console.log('MONTH------')
+
 
   var variables = db.collection('variables')
 
@@ -111,17 +152,28 @@ var monthStatistics = function(db, date){
     }
 
     var match = {
-      $match : {month: date.matchTo.month, year: date.matchTo.year}
+      $match : { month: date.getUTCMonth(), year: date.getUTCFullYear()}
     }
 
-    var cursor = collection.aggregate([project,match,projectValue])
+    var cursor = collection.aggregate([project,match,projectValue]).toArray(function(err, docs) {
 
-    create(cursor, date, id, "month")
+       if(docs.length != 0){
+
+        var mappedArray = docs.map(function (item) { return item.value; });
+        var results = generateStatisticsDocument(mappedArray, date)
+
+        db.collection(id+'-month').update({timestamp: date.simpleTimestamp}, results, { upsert: true }, function(err,res){
+          console.log(id+'-----'+res.result.nModified+' ---DATE: '+date.toUTCString());
+        })
+
+      }
+
+    });
 
   });
 }
 
-var create = function(cursor, date, id, type){
+var create = function(cursor, date, id, type, callback){
 
   cursor.toArray(function(err, docs) {
 
@@ -135,7 +187,9 @@ var create = function(cursor, date, id, type){
       var mappedArray = docs.map(function (item) { return item.value; });
       var results = generateStatisticsDocument(mappedArray, date)
 
-      db.collection(id+'-'+type).update({timestamp: date.simpleTimestamp}, results, { upsert: true })
+      db.collection(id+'-'+type).update({timestamp: date.simpleTimestamp}, results, { upsert: true }, function(err,res){
+
+      })
 
       console.log(id)
       console.log(mappedArray)

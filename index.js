@@ -9,6 +9,7 @@ var db_functions = require('./db_functions.js')
 var statistics = require('./statistics-functions.js')
 var statistics_queries = require('./statistics-queries.js')
 var date_validations = require('./date-validations.js')
+var launch_routine = require('./launch-routine.js')
 
 var app = express()
 //var jwt = require('express-jwt')
@@ -33,6 +34,8 @@ MongoClient.connect(url, function(err, database) {
   assert.equal(null, err);
   console.log("Connected successfully to server")
   db = database
+
+  launch_routine.launch(db)
 
 });
 
