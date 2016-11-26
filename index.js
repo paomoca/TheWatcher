@@ -105,26 +105,53 @@ app.post('/device', validate({body: schemas.DeviceSchema}), function (req, res) 
 
 //6. Petición de lista de variables
 app.get('/variables', function (req, res) {
-  //  res.status(201)
-  res.send('Hello World! ')
+
+  db_functions.findAllVariables(db, function(err, docs){
+     if(err){
+        next(err)
+      } else {
+        res.send(docs)
+      }
+  })
+  
 })
 
 // 7. Petición de la información de una variable en específico
 app.get('/variable/:variable_id', function (req, res) {
-  //  res.status(201)
-  res.send('Hello World! ')
+
+  db_functions.findVariable(db, req.params.variable_id, function(err, docs){
+     if(err){
+        next(err)
+      } else {
+        res.send(docs)
+      }
+  })
+
 })
 
 // 8. Petición de lista de dispositivos: de una variable en específico
-app.get('/devices/:variable', function (req, res) {
-  //  res.status(201)
-  res.send('Hello World! ')
+app.get('/devices/:variable_id', function (req, res) {
+  
+  db_functions.findVariableDevices(db, req.params.variable_id, function(err, docs){
+     if(err){
+        next(err)
+      } else {
+        res.send(docs)
+      }
+  })
+
 })
 
 // Petición de la información de un device en específico
 app.get('/device/:device_id', function (req, res) {
 
-  res.send('Hello World! ')
+  db_functions.findDevice(db, req.params.device_id, function(err, docs){
+     if(err){
+        next(err)
+      } else {
+        res.send(docs)
+      }
+  })
 
 })
 

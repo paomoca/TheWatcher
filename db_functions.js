@@ -73,8 +73,8 @@ var findVariable = function(db, dataKey, callback) {
   var collection = db.collection('variables')
 
   // Find some documents
-  collection.findOne({_id: ObjectId(dataKey)}, function(err, result){
-    callback(result)
+  collection.findOne({_id: ObjectId(dataKey)}, function(err, res){
+    callback(err, res)
   })
 
 }
@@ -84,16 +84,36 @@ var findDevice = function(db, deviceKey, callback) {
   var collection = db.collection('devices')
 
   // Find some documents
-  collection.findOne({_id: ObjectId(deviceKey)}, function(err, result){
-    callback(result)
+  collection.findOne({_id: ObjectId(deviceKey)}, function(err, res){
+    callback(err, res)
   })
 
 }
 
 
-/***************************************************************************/
+var findAllVariables = function(db, callback) {
 
+  var collection = db.collection('variables')
 
+  collection.find({}).toArray(function(err, docs) {
+
+    callback(err, docs)
+
+  })
+
+}
+
+var findVariableDevices = function(db, dataKey, callback){
+
+  var collection = db.collection('devices')
+
+  collection.find({variable_id: dataKey}).toArray(function(err, docs) {
+
+    callback(err, docs)
+
+  })
+
+}
 
 
 /***************************************************************************/
@@ -116,18 +136,6 @@ var insertDocuments = function(db, callback) {
     assert.equal(3, result.ops.length);
     console.log("Inserted 3 documents into the collection");
     callback(result);
-  });
-}
-
-var findAllDocuments = function(db, callback) {
-  // Get the documents collection
-  var collection = db.collection('documents');
-  // Find some documents
-  collection.find({}).toArray(function(err, docs) {
-    assert.equal(err, null);
-    console.log("Found the following records");
-    console.log(docs)
-    callback(docs);
   });
 }
 
@@ -173,7 +181,9 @@ exports.insertDevice = insertDevice;
 exports.insertData = insertData;
 
 exports.insertDocuments = insertDocuments;
-exports.findAllDocuments = findAllDocuments;
 exports.findDocuments = findDocuments;
 exports.updateDocument = updateDocument;
 exports.removeDocument = removeDocument;
+
+exports.findAllVariables = findAllVariables;
+exports.findVariableDevices = findVariableDevices;
