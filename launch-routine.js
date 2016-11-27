@@ -5,7 +5,7 @@ var statistics = require('./statistics-functions.js')
 
   1. Loop desde el anio inicial (2016) hasta el anio actual
   2. Para cada anio que existe genera las estadisticas del anio (1 valor por mes) y hace un loop de sus meses
-  3. Para cada mes que exista genera las estadisticas del mes (1 valor por dia) y hace un loop de sus dias 
+  3. Para cada mes que exista genera las estadisticas del mes (1 valor por dia) y hace un loop de sus dias
   4. Para cada dia que exista genera las estadisticas del dia (1 valor por hora)
 
 */
@@ -126,7 +126,7 @@ var dayLoop = function(collection, id, y, m, d){
   collection.aggregate([projectD,{$match : { year: y, month: m, day: d }}]).toArray(function(err, docs) {
 
     if(docs.length != 0){
-      
+
       console.log('                    '+id+'---- '+'d:'+d+' '+docs.length)
 
       for(var h = 0; h <= 24; h++){

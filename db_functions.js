@@ -2,51 +2,52 @@ var assert = require('assert')
 var ObjectId = require('mongodb').ObjectID
 
 var insertVariable = function(db, body, callback) {
-  // Get the documents collection
-  var collection = db.collection('variables');
-  // Insert some documents
-  collection.insertOne(body,
-    function(err, result) {
-    assert.equal(null, err);
-    console.log("Inserted 1 document1 into the collection");
-    callback(result);
-  });
+
+  var collection = db.collection('variables')
+
+  collection.insertOne(body, function(err, result) {
+    callback(err,result)
+  })
 }
 
 var insertDevice = function(db, body, callback) {
 
-  var collection = db.collection('devices')
+  validateVariable(db, body.variable_id, function(err, res){
 
-    collection.insertOne(body,
-    function(err, result) {
-    assert.equal(null, err);
-    console.log("Inserted 1 document1 into the collection");
-    callback(result);
-  });
+    if(err || !res){
+      var err = new Error('Invalid Keys')
+      err.name = 'InvalidKeys'
+      err.validations = 'There is no variable related to the key '+body.variable_id
+      callback(err, null)
+
+    } else {
+      var collection = db.collection('devices')
+        collection.insertOne(body, function(err, insertionResult) {
+        callback(err, insertionResult)
+      })
+    }
+
+  })
+
 }
 
 
 var insertData = function(db, dataKey, deviceKey, measurements, callback) {
 
+  validateKeys(db, dataKey, deviceKey, function(err,res){
 
-  validateKeys(db, dataKey, deviceKey, function(result){
-
-        console.log(result)
-
-    if(!result) {
+    if(err || !res) {
       var err = new Error('Invalid Keys')
       err.name = 'InvalidKeys'
       err.validations = 'The combination for dataKey and deviceKey is invalid '
-      callback(err)
-    //  console.log(callback.arguments);
+      callback(err, null)
+
     } else {
 
-      // Get the documents collection
       var collection = db.collection(dataKey)
 
       collection.insertMany(measurements, function(err, result) {
-        console.log("Inserted 1 document1 into the collection");
-        callback(null, result.insertedCount)
+        callback(err, result)
       })
     }
 
@@ -57,13 +58,35 @@ var insertData = function(db, dataKey, deviceKey, measurements, callback) {
 
 var validateKeys = function(db, dataKey, deviceKey, callback) {
 
-  // Get the documents collection
   var collection = db.collection('devices')
 
-  // Find some documents
-  collection.findOne({ _id: ObjectId(deviceKey), variable_id:dataKey }, function(err, result){
-    callback(result)
-  })
+  if(ObjectId.isValid(deviceKey)){
+
+    var id = new ObjectId(deviceKey)
+    collection.findOne({ _id: id, variable_id:dataKey }, {}, function(err, result){
+      callback(err,result)
+    })
+
+  } else {
+    callback(true,null)
+  }
+
+
+
+}
+
+var validateVariable = function(db, dataKey, callback){
+
+  var collection = db.collection('variables')
+
+  if(ObjectId.isValid(dataKey)){
+      var id = new ObjectId(dataKey)
+      collection.findOne({ _id: id }, {} , function(err, result){
+        callback(err,result)
+      })
+  } else {
+    callback(true,null)
+  }
 
 }
 

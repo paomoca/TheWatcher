@@ -35,9 +35,17 @@ MongoClient.connect(url, function(err, database) {
   console.log("Connected successfully to server")
   db = database
 
-  launch_routine.launch(db)
+  //launch_routine.launch(db)
 
 });
+
+var jsonRespose = function(res, status, json){
+
+  res.status(status)
+  res.setHeader('Content-Type', 'application/json');
+  res.send(json)
+
+}
 
 /* API PANEL ADMINISTRADOR ***********************************************************************************************/
 
@@ -55,20 +63,20 @@ MongoClient.connect(url, function(err, database) {
 //  "foto_url": "latas.jpg"
 //  }
 // }
-app.post('/variable', validate({body: schemas.VariableSchema}), function (req, res) {
+app.post('/variable', validate({body: schemas.VariableSchema}), function (req, res, next) {
 
-  var body = req.body.payload
+  db_functions.insertVariable(db, req.body.payload, function(err, result) {
 
-  db_functions.insertVariable(db, body, function(result) {
-    var key = result.ops[0]._id
-    var response = JSON.stringify({
-      payload: {
-        variable_id: key
-      }
-    })
-    res.status(200)
-    res.setHeader('Content-Type', 'application/json');
-    res.send(response)
+    if(err){
+      next(err)
+    } else {
+      var response = JSON.stringify({
+        payload: {
+          variable_id: result.insertedId
+        }
+      })
+      jsonRespose(res, 200, response)
+    }
   })
 
 })
@@ -85,20 +93,23 @@ app.post('/variable', validate({body: schemas.VariableSchema}), function (req, r
 //  "descripcion":"Chiquito y brillante"
 //  }
 // }
-app.post('/device', validate({body: schemas.DeviceSchema}), function (req, res) {
+app.post('/device', validate({body: schemas.DeviceSchema}), function (req, res, next) {
 
-  var body = req.body.payload
+  db_functions.insertDevice(db, req.body.payload, function(err, result) {
 
-  db_functions.insertDevice(db, body, function(result) {
-    var key = result.ops[0]._id
-    var response = JSON.stringify({
-      payload: {
-        variable_id: key
-      }
-    })
-    res.status(200)
-    res.setHeader('Content-Type', 'application/json');
-    res.send(response)
+    if(err){
+      next(err)
+    } else {
+
+      var response = JSON.stringify({
+        payload: {
+          variable_id: result.insertedId
+        }
+      })
+
+      jsonRespose(res, 200, response)
+    }
+
   })
 
 })
@@ -110,10 +121,10 @@ app.get('/variables', function (req, res) {
      if(err){
         next(err)
       } else {
-        res.send(docs)
+        jsonRespose(res, 200, docs)
       }
   })
-  
+
 })
 
 // 7. Petición de la información de una variable en específico
@@ -123,7 +134,7 @@ app.get('/variable/:variable_id', function (req, res) {
      if(err){
         next(err)
       } else {
-        res.send(docs)
+        jsonRespose(res, 200, docs)
       }
   })
 
@@ -131,12 +142,12 @@ app.get('/variable/:variable_id', function (req, res) {
 
 // 8. Petición de lista de dispositivos: de una variable en específico
 app.get('/devices/:variable_id', function (req, res) {
-  
+
   db_functions.findVariableDevices(db, req.params.variable_id, function(err, docs){
      if(err){
         next(err)
       } else {
-        res.send(docs)
+        jsonRespose(res, 200, docs)
       }
   })
 
@@ -149,14 +160,13 @@ app.get('/device/:device_id', function (req, res) {
      if(err){
         next(err)
       } else {
-        res.send(docs)
+        jsonRespose(res, 200, docs)
       }
   })
 
 })
 
 /* API INSERCION DE MEDICIONES **************************************************************************/
-
 
 // 3. Inserción de múltiples mediciones: cualquier variable, cualquier dispositivo
 
@@ -174,7 +184,6 @@ app.get('/device/:device_id', function (req, res) {
 // }
 app.post('/data', validate({body: schemas.DataSchema}), function (req, res, next) {
 
-  var testValue = req.body.payload.data[0].measurements[0].value
   var dataArray = req.body.payload.data
 
   dataArray.forEach(function(dataItem){
@@ -184,19 +193,26 @@ app.post('/data', validate({body: schemas.DataSchema}), function (req, res, next
     var measurementsArray = dataItem.measurements
 
     measurementsArray.forEach(function(measurementItem){
-      // var time = measurementItem.time
-      // var value = measurementItem.value
+
       measurementItem.deviceKey = deviceKey
       measurementItem.date = new Date(measurementItem.time)
-      console.log(measurementItem.date)
     })
 
     db_functions.insertData(db, dataKey, deviceKey, measurementsArray, function(err,result) {
+
       if(err){
         next(err)
       } else {
-        res.send('Good inserted '+result+' elements')
+
+        var response = JSON.stringify({
+          payload: {
+            insertedCount: result.insertedCount
+          }
+        })
+
+        jsonRespose(res, 200, response)
       }
+
     })
 
   });
@@ -238,10 +254,18 @@ app.post('/data/:dataKey', validate({body: schemas.VariableDataSchema}), functio
     })
 
     db_functions.insertData(db, dataKey, deviceKey, measurementsArray, function(err, result) {
+
       if(err){
         next(err)
       } else {
-        res.send('Good inserted '+result+' elements')
+
+        var response = JSON.stringify({
+          payload: {
+            insertedCount: result.insertedCount
+          }
+        })
+
+        jsonRespose(res, 200, response)
       }
 
     })
@@ -283,11 +307,20 @@ app.post('/data/:dataKey/:deviceKey', validate({body: schemas.DeviceDataSchema})
     })
 
     db_functions.insertData(db, dataKey, deviceKey, measurementsArray, function(err, result) {
+
       if(err){
         next(err)
       } else {
-        res.send('Good inserted '+result+' elements')
+
+        var response = JSON.stringify({
+          payload: {
+            insertedCount: result.insertedCount
+          }
+        })
+
+        jsonRespose(res, 200, response)
       }
+
     })
 
   })
@@ -305,7 +338,7 @@ app.get('/statistics/year/:dataKey', validate({query: schemas.YearSchema}), func
     if(err){
       next(err)
     } else {
-      res.send(docs)
+      jsonRespose(res, 200, docs)
     }
 
   })
@@ -321,7 +354,7 @@ app.get('/statistics/month/:dataKey', validate({query: schemas.MonthSchema}), fu
     if(err){
       next(err)
     } else {
-      res.send(docs)
+      jsonRespose(res, 200, docs)
     }
 
   })
@@ -337,7 +370,7 @@ app.get('/statistics/day/:dataKey', validate({query: schemas.DaySchema}), functi
     if(err){
       next(err)
     } else {
-      res.send(docs)
+      jsonRespose(res, 200, docs)
     }
 
   })
@@ -353,7 +386,7 @@ app.get('/statistics/weekDay/:dataKey', validate({query: schemas.WeekDaySchema})
     if(err){
       next(err)
     } else {
-      res.send(docs)
+      jsonRespose(res, 200, docs)
     }
 
   })
@@ -365,14 +398,12 @@ app.get('/statistics/weekDay/:dataKey', validate({query: schemas.WeekDaySchema})
 //Prueba con timezone offset: localhost:3000/statistics/weekDay/hour/582b7288009e5750e40a43ac?year=2016&weekDay=1&hour=13&offset=360&type=mean
 app.get('/statistics/weekDay/hour/:dataKey', validate({query: schemas.WeekDayHourSchema}), function(req, res, next){
 
-
-  console.log(parseInt('-6'));
   statistics_queries.queryWeekDayHour(db, req.query, req.params.dataKey, function(err, docs){
 
     if(err){
       next(err)
     } else {
-      res.send(docs)
+      jsonRespose(res, 200, docs)
     }
 
   })
@@ -392,7 +423,7 @@ app.get('/statistics/range/day/:dataKey', validate({query: schemas.RangeDaySchem
           if(err){
             next(err)
           } else {
-            res.send(docs)
+            jsonRespose(res, 200, docs)
           }
 
         })
@@ -417,7 +448,7 @@ app.get('/statistics/range/day/hour/:dataKey', validate({query: schemas.RangeDay
         if(err){
           next(err)
         } else {
-          res.send(docs)
+          jsonRespose(res, 200, docs)
         }
 
       })

@@ -1,7 +1,7 @@
-var dateRangeValidation = function(d1, d2, callback){
+//1 Enero 2016 00:00
+var minUTC = new Date(1451606400000)
 
-  //1 Enero 2016 00:00
-  var minUTC = new Date(1451606400000)
+var dateRangeValidation = function(d1, d2, callback){
 
   var now = new Date()
   var date1 = new Date(parseInt(d1))

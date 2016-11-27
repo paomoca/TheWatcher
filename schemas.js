@@ -1,5 +1,14 @@
 //JSON SCHEMAS
 
+var allowedTypes = '^(mode|median|mean)$'
+var yearPattern = '^[2]\\d\\d\\d$'
+var monthPattern = '^[1-9]$|^[1][0-2]$'
+var dayPattern = '^[1-9]$|^[1-2]\\d$|^[3][0-1]$'
+var hourPattern = '^[1-9]$|^[1]\\d$|^[2][0-4]$'
+var weekDayPattern = '^[1-7]$'
+var offsetPattern = '^[1-9]$|^\\d\\d$|^[1-7]\\d\\d$|^[1-8][0-3]\\d$|^[1-8][4][0]$|^[-][1-9]$|^[-]\\d\\d$|^[-][1-6]\\d\\d$|^[-][1-7][2][0]$'
+var millisecondsPattern = '^\\d+$'
+
 var VariableSchema = {
 
   type: 'object',
@@ -49,6 +58,11 @@ var DeviceSchema = {
         },
         lugar: {
           type: 'string',
+          required: true
+        },
+        timezoneOffset: {
+          type: 'string',
+          pattern: offsetPattern,
           required: true
         },
         variable_id: {
@@ -113,7 +127,9 @@ var DataSchema = {
 
                     time: {
                       type: 'number',
-                      required: true
+                      required: true,
+                      minimum: 1451606400000,
+                      maximum: new Date().getTime()
                     },
                     value: {
                       type: 'number',
@@ -331,15 +347,6 @@ var GetStatisticsSchema = {
   }
 
 }
-
-var allowedTypes = '^(mode|median|mean)$'
-var yearPattern = '^[2]\\d\\d\\d$'
-var monthPattern = '^[1-9]$|^[1][0-2]$'
-var dayPattern = '^[1-9]$|^[1-2]\\d$|^[3][0-1]$'
-var hourPattern = '^[1-9]$|^[1]\\d$|^[2][0-4]$'
-var weekDayPattern = '^[1-7]$'
-var offsetPattern = '^[1-9]$|^\\d\\d$|^[1-7]\\d\\d$|^[1-8][0-3]\\d$|^[1-8][4][0]$|^[-][1-9]$|^[-]\\d\\d$|^[-][1-6]\\d\\d$|^[-][1-7][2][0]$'
-var millisecondsPattern = '^\\d+$'
 
 var YearSchema = {
 
