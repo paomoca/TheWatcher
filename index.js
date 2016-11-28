@@ -35,7 +35,7 @@ MongoClient.connect(url, function(err, database) {
   console.log("Connected successfully to server")
   db = database
 
-  //launch_routine.launch(db)
+  launch_routine.launch(db)
 
 });
 
