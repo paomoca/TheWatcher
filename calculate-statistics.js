@@ -1,5 +1,6 @@
 var ObjectId = require('mongodb').ObjectID
 var statistics = require('simple-statistics')
+var moment = require('moment-timezone')
 var date_validations = require('./date-validations.js')
 
 //1 Enero 2016 00:00
@@ -21,6 +22,13 @@ var projectValue = {
     value : 1,
     _id : 0,
   }
+
+}
+
+var sort = {
+  $sort : {
+    value : 1
+  }
 }
 
 var hourStatistics = function(db, id, minTimestamp, maxTimestamp, callback){
@@ -37,9 +45,9 @@ var hourStatistics = function(db, id, minTimestamp, maxTimestamp, callback){
 
   var collection = db.collection(id)
 
-  var cursor = collection.aggregate([project,match, projectValue]).toArray(function(err, docs) {
+  var cursor = collection.aggregate([project,match, projectValue, sort]).toArray(function(err, docs) {
 
-    if(docs.length != 0){
+    if(!err && docs.length != 0){
 
       callback(err, docs.length)
 
@@ -49,7 +57,6 @@ var hourStatistics = function(db, id, minTimestamp, maxTimestamp, callback){
           console.log(id+': HOURS '+timestamp);
         })
       })
-
 
     } else {
       callback(err, 0)
@@ -73,9 +80,9 @@ var dayStatistics = function(db, id, minTimestamp, maxTimestamp, callback){
 
   var collection = db.collection(id)
 
-  var cursor = collection.aggregate([project,match, projectValue]).toArray(function(err, docs) {
+  var cursor = collection.aggregate([project,match, projectValue, sort]).toArray(function(err, docs) {
 
-    if(docs.length != 0){
+    if(!err && docs.length != 0){
 
       callback(err, docs.length)
 
@@ -85,10 +92,6 @@ var dayStatistics = function(db, id, minTimestamp, maxTimestamp, callback){
           console.log(id+': DAY '+timestamp);
         })
       })
-
-
-
-
 
     } else {
       callback(err, 0)
@@ -110,12 +113,11 @@ var monthStatistics = function(db, id, minTimestamp, maxTimestamp, callback){
     ] }
   }
 
-
   var collection = db.collection(id)
 
-  var cursor = collection.aggregate([project,match, projectValue]).toArray(function(err, docs) {
+  var cursor = collection.aggregate([project,match, projectValue, sort]).toArray(function(err, docs) {
 
-    if(docs.length != 0){
+    if(!err && docs.length != 0){
 
       callback(err, docs.length)
 
@@ -136,69 +138,13 @@ var monthStatistics = function(db, id, minTimestamp, maxTimestamp, callback){
 
 }
 
-var previousHourStatistics = function(db, id, nowTimestamp){
-
-  var previousHourTimestamp = nowTimestamp - 1 * 60 * 60 * 1000
-
-  console.log('\nHOUR')
-  console.log(new Date(previousHourTimestamp))
-  console.log(new Date(nowTimestamp))
-
-  hourStatistics(db, id, previousHourTimestamp, nowTimestamp, function(err,hasData){
-
-  })
-
-}
-
-var previousDayStatistics = function(db, id, nowTimestamp){
-
-  var previousDayTimestamp = nowTimestamp - 24 * 60 * 60 * 1000
-
-  console.log('\nDAY:')
-  console.log(new Date(previousDayTimestamp))
-  console.log(new Date(nowTimestamp))
-
-  dayStatistics(db, id, previousDayTimestamp, nowTimestamp, function(err,hasData){
-
-  })
-
-}
-
-var previousMonthStatistics = function(db, id, nowTimestamp){
-
-  var now = new Date(nowTimestamp)
-  var month = now.getUTCMonth()
-  var year = now.getUTCFullYear()
-
-  if(month==0){
-    var prevMonth = 11
-    var prevYear = year-1
-  } else {
-    var prevMonth = month-1
-    var prevYear = year
-  }
-
-  var minTimestamp = new Date(prevYear, prevMonth, 1, 0, 0, 0, 0).getTime()
-  var maxTimestamp = new Date(year, month, 1, 0, 0, 0, 0).getTime()
-
-  console.log('\nMES')
-  console.log(new Date(minTimestamp))
-  console.log(new Date(maxTimestamp))
-
-  monthStatistics(db, id, minTimestamp, maxTimestamp, function(err,hasData){
-
-  })
-
-}
-
 var generateStatisticsDocument = function(array, timestamp, callback){
 
   var results = {}
-
   results.timestamp = timestamp
   results.mean = statistics.mean(array)
-  results.mode = statistics.mode(array)
-  results.median = statistics.median(array)
+  results.mode = statistics.modeSorted(array)
+  results.median = statistics.medianSorted(array)
   results.arrayCount = array.length
   results.createdAt = new Date()
 
@@ -209,6 +155,3 @@ var generateStatisticsDocument = function(array, timestamp, callback){
 exports.monthStatistics = monthStatistics
 exports.dayStatistics = dayStatistics
 exports.hourStatistics = hourStatistics
-exports.previousHourStatistics = previousHourStatistics
-exports.previousDayStatistics = previousDayStatistics
-exports.previousMonthStatistics = previousMonthStatistics

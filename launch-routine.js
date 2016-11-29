@@ -16,7 +16,7 @@ var moment = require('moment-timezone')
 var minUTCTimestamp = 1451606400000
 var minUTC = new Date(minUTCTimestamp)
 
-var run = function(db){
+var run = function(db, callback){
 
   var minYear = 2016
 
@@ -46,6 +46,8 @@ var run = function(db){
 
   })
 
+  callback('Launched all statistic calculations')
+
 }
 
 var months = function(db, id, y, m, timezone){
@@ -55,12 +57,12 @@ var months = function(db, id, y, m, timezone){
   var minLocal = moment.tz(obj, timezone)
   var maxLocal = minLocal.clone().add(1, 'month')
 
-  var minDate = minLocal.clone().utc()
-  var maxDate = maxLocal.clone().utc()
+  var min = minLocal.clone().utc().valueOf()
+  var max = maxLocal.clone().utc().valueOf()
 
-  statistics.monthStatistics(db, id, minDate.valueOf(), maxDate.valueOf(), function(err, hasData){
+  statistics.monthStatistics(db, id, min, max, function(err, hasData){
 
-    if(hasData!= 0){
+    if(hasData != 0){
 
       var daysInMonth = minLocal.daysInMonth()
       for(var d = 1; d <= daysInMonth; d++){
@@ -80,10 +82,10 @@ var days = function(db, id, y, m, d, timezone){
   var minLocal = moment.tz(obj, timezone)
   var maxLocal = minLocal.clone().add(1, 'day')
 
-  var minDate = minLocal.clone().utc()
-  var maxDate = maxLocal.clone().utc()
+  var min = minLocal.clone().utc().valueOf()
+  var max = maxLocal.clone().utc().valueOf()
 
-  statistics.dayStatistics(db, id, minDate.valueOf(), maxDate.valueOf(), function(err, hasData){
+  statistics.dayStatistics(db, id, min, max, function(err, hasData){
 
     if(hasData != 0){
       for(var h = 0; h <= 23; h++){
@@ -102,14 +104,13 @@ var hours = function(db, id, y, m, d, h, timezone){
   var minLocal = moment.tz(obj, timezone)
   var maxLocal = minLocal.clone().add(1, 'hour')
 
-  var minDate = minLocal.clone().utc()
-  var maxDate = maxLocal.clone().utc()
+  var min = minLocal.clone().utc().valueOf()
+  var max = maxLocal.clone().utc().valueOf()
 
-  statistics.hourStatistics(db, id, minDate.valueOf(), maxDate.valueOf(), function(err, hasData){
+  statistics.hourStatistics(db, id, min, max, function(err, hasData){
 
   })
 
 }
-
 
 exports.run = run

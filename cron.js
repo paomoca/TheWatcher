@@ -5,6 +5,10 @@ var moment = require('moment-timezone')
 
 var runStatistics = function(db, timestamp, callback){
 
+  var previousHourTimestamp = moment(timestamp).subtract(1, 'hour').valueOf()
+  var previousDayTimestamp = moment(timestamp).subtract(1, 'day').valueOf()
+  var previousMonthTimestamp = moment(timestamp).subtract(1, 'month').valueOf()
+
   var variables = db.collection('variables')
 
   //Se obtiene cada una de las variables registradas en la base de datos
@@ -26,32 +30,26 @@ var runStatistics = function(db, timestamp, callback){
 
     if(localMinutes == 0){
       //Estadisticas de la hora pasada
-      statistics.previousHourStatistics(db, id, timestamp)
+      statistics.hourStatistics(db, id, previousHourTimestamp, timestamp, function(){})
     }
 
     //Verifica si en la fecha local de la variable la hora es 0
     //Hora 0 representa un cambio de dia
     if(localHour == 0 && localMinutes == 0){
       //Estadisticas del dia
-      statistics.previousDayStatistics(db, id, timestamp)
+      statistics.dayStatistics(db, id, previousDayTimestamp ,timestamp, function(){})
     }
 
     //Verifica si en la fecha local de la variable el dia es uno
     //Dia 1 representa un cambio de mes
     if(localHour == 0 && localDay == 1){
       //Estadisticas del mes
-      statistics.previousMonthStatistics(db, id, timestamp)
+      statistics.monthStatistics(db, id, previousMonthTimestamp, timestamp, function(){})
     }
 
-    // console.log('\n '+timezone);
-    // console.log(date)
-    // console.log(localVariableTime.date());
-    // console.log(localVariableTime.day());
-    // console.log(localVariableTime.month());
-    // console.log(localVariableTime.year());
-    // console.log(localVariableTime.hour());
-
   })
+
+  callback('Launched all hourly statistic calculations')
 
 }
 

@@ -47,65 +47,28 @@ MongoClient.connect(url, function(err, database) {
   console.log("Connected successfully to server")
   db = database
 
-  launch_routine.run(db)
+  launch_routine.run(db, function(msg){
+    console.log(msg)
+  })
 
   cron.schedule('0 0-23 * * *', function(){
 
-    console.log('****************************** running every HOUR from 1 to 23 ')
+    console.log('***** running every HOUR from 1 to 23 ')
 
     var now = new Date()
-
     now.setUTCMinutes(0)
     now.setUTCSeconds(0)
     now.setUTCMilliseconds(0)
 
     cron_functions.runStatistics(db, now.getTime(), function(msg){
-      console.log('Done running Statistics');
+      console.log(msg)
     })
 
   });
 
-
-  // var timestamp = 1480550400000,
-  //     date = new Date(timestamp);
-  //
-  // var m = moment.tz(timestamp, "America/Mexico_City") // 2014-06-22T11:21:08-07:00
-  // var utc = m.clone().utc()
-
   // moment.tz.names().forEach(function(item, index){
   //   console.log(item);
   // })
-
-  // console.log(m.format());
-  // console.log(utc.format());
-  //
-  // console.log(m.date());
-  // console.log(m.day());
-  // console.log(m.month());
-  // console.log(m.year());
-  // console.log(m.hour());
-  //
-  // console.log('\n');
-  //
-  // console.log(utc.date());
-  // console.log(utc.day());
-  // console.log(utc.month());
-  // console.log(utc.year());
-  // console.log(utc.hour());
-  //
-  // var arr = [2013, 5, 1],
-  //     str = "2013-12-01",
-  //     obj = { year : 2016, month :10, day : 1, hour: 15 };
-  //
-  //     var l = moment.tz(obj, "America/Mexico_City")
-  //
-  //     console.log(l.utc().format());
-  //
-  //
-  //
-  // // moment.tz.names().forEach(function(item, index){
-  // //   console.log(item);
-  // // })
 
 
 });
@@ -579,18 +542,19 @@ app.get('/statistics/range/day/hour/:dataKey', validate({query: schemas.RangeDay
 //   res.send('Good')
 // })
 //
-// app.get('/data/variable/:dataKey', validate({query: schemas.GetDataSchema}),  function (req, res) {
-//
-//   //  res.status(201)
-//   res.send(req.query)
-//   // var variable = req.params.dataKey
-//   // var start = +JSON.stringify(req.query.EPOCH_START)
-//   // var end = JSON.stringify(req.query.EPOCH_END)
-//
-//   //  res.send(variable+' - '+start+' - '+end)
-//   res.send('Good')
-// })
-//
+app.get('/data/variable/:dataKey', function (req, res, next) {
+
+
+  var collection = db.collection(req.params.dataKey).find().sort({value:1}).toArray(function(err,docs){
+    if(!err){
+      jsonRespose(res, 200, docs)
+    } else {
+      next(err)
+    }
+  })
+
+})
+
 // app.get('/data/device/:deviceKey', validate({query: schemas.GetDataSchema}),  function (req, res) {
 //   //  res.status(201)
 //   //res.send(req.params)
