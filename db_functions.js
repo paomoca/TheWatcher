@@ -137,6 +137,23 @@ var findVariableDevices = function(db, dataKey, callback){
 
 }
 
+var getVariableOffset = function (db, dataKey, callback){
+
+  var collection = db.collection('variables')
+
+  collection.findOne({_id: ObjectId(dataKey)},{ fields: { timezoneOffset: 1, _id: 0}}, function(err, doc){
+
+    if(err || !doc){
+      callback(0)
+    } else {
+      callback(doc.timezoneOffset)
+    }
+
+
+  })
+
+}
+
 
 /***************************************************************************/
 
@@ -173,6 +190,8 @@ exports.findAllVariables = findAllVariables;
 exports.findVariableDevices = findVariableDevices;
 exports.findVariable = findVariable;
 exports.findDevice = findDevice;
+
+exports.getVariableOffset = getVariableOffset;
 
 exports.updateDocument = updateDocument;
 exports.removeDocument = removeDocument;

@@ -6,7 +6,6 @@ var bodyParser = require('body-parser')
 
 var schemas = require('./schemas.js')
 var db_functions = require('./db_functions.js')
-var statistics = require('./statistics-functions.js')
 var statistics_queries = require('./statistics-queries.js')
 var date_validations = require('./date-validations.js')
 var launch_routine = require('./launch-routine.js')
@@ -35,7 +34,14 @@ MongoClient.connect(url, function(err, database) {
   console.log("Connected successfully to server")
   db = database
 
-  launch_routine.launch(db)
+//  launch_routine.launch(db)
+
+  // var query = {
+  //   hour: 0,
+  //   weekDay: 1
+  // }
+  //
+  // date_validations.calculateUTCWeekDayHour(query, -120)
 
 });
 
@@ -60,7 +66,8 @@ var jsonRespose = function(res, status, json){
 //  "lugar": "CUBO",
 //  "unidad": "número",
 //  "descripcion": "Contador de latas",
-//  "foto_url": "latas.jpg"
+//  "foto_url": "latas.jpg",
+//  "timezoneOffset": 360
 //  }
 // }
 app.post('/variable', validate({body: schemas.VariableSchema}), function (req, res, next) {
@@ -72,7 +79,7 @@ app.post('/variable', validate({body: schemas.VariableSchema}), function (req, r
     } else {
       var response = JSON.stringify({
         payload: {
-          variable_id: result.insertedId
+          dataKey: result.insertedId
         }
       })
       jsonRespose(res, 200, response)
@@ -103,7 +110,7 @@ app.post('/device', validate({body: schemas.DeviceSchema}), function (req, res, 
 
       var response = JSON.stringify({
         payload: {
-          variable_id: result.insertedId
+          deviceKey: result.insertedId
         }
       })
 
@@ -398,15 +405,28 @@ app.get('/statistics/weekDay/:dataKey', validate({query: schemas.WeekDaySchema})
 //Prueba con timezone offset: localhost:3000/statistics/weekDay/hour/582b7288009e5750e40a43ac?year=2016&weekDay=1&hour=13&offset=360&type=mean
 app.get('/statistics/weekDay/hour/:dataKey', validate({query: schemas.WeekDayHourSchema}), function(req, res, next){
 
-  statistics_queries.queryWeekDayHour(db, req.query, req.params.dataKey, function(err, docs){
+  //Get the timezoneOffset of the corresponding variable
+  db_functions.getVariableOffset(db, req.params.dataKey, function(timezoneOffset){
 
-    if(err){
-      next(err)
-    } else {
-      jsonRespose(res, 200, docs)
-    }
+    //Calculates the new values for weekDay and hour according to the timezoneOffset.
+    // (The year is left alone since we are getting back values for all the $weekDays in that $year)
+    date_validations.calculateUTCWeekDayHour(req.query, timezoneOffset, function(UTCQuery){
 
+      //Gets statistics, querying data with the new UTCValue
+      statistics_queries.queryWeekDayHour(db, UTCQuery, req.params.dataKey, function(err, docs){
+
+        if(err){
+          next(err)
+        } else {
+          jsonRespose(res, 200, docs)
+        }
+
+      })
+    })
   })
+
+
+
 
 })
 

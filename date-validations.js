@@ -1,5 +1,6 @@
 //1 Enero 2016 00:00
-var minUTC = new Date(1451606400000)
+var minMilliseconds = 1451606400000
+var minUTC = new Date(minMilliseconds)
 
 var dateRangeValidation = function(d1, d2, callback){
 
@@ -47,4 +48,46 @@ var dateRangeValidation = function(d1, d2, callback){
 
 }
 
+var cleanDate = function(){
+  return new Date(minMilliseconds)
+}
+
+var calculateUTCWeekDayHour = function(query, timezoneOffset, callback){
+
+  var desiredHour = parseInt(query.hour)
+  var minutes = desiredHour*60
+
+  var UTCHour = (minutes + timezoneOffset)/60
+  var UTCWeekDay = parseInt(query.weekDay)
+
+  //If the hour is greater than 24 it means we moved to the next weekDay
+  if(UTCHour >= 24){
+    UTCHour = UTCHour - 24
+    UTCWeekDay++
+    if(UTCWeekDay > 7){
+      UTCWeekDay = 1
+    }
+  }
+
+  //If the hour is a negative number it means we go back one weekDay
+  if(UTCHour < 0){
+    UTCHour = UTCHour + 24
+    UTCWeekDay--
+    if(UTCWeekDay < 1){
+      UTCWeekDay = 7
+    }
+  }
+
+  query.hour = UTCHour
+  query.weekDay = UTCWeekDay
+
+  callback(query)
+
+  console.log('UTCHour: '+ UTCHour)
+  console.log('UTCWeekDay: '+ UTCWeekDay)
+
+}
+
 exports.dateRangeValidation = dateRangeValidation
+exports.cleanDate = cleanDate
+exports.calculateUTCWeekDayHour = calculateUTCWeekDayHour

@@ -29,6 +29,12 @@ var VariableSchema = {
           type: 'string',
           required: true
         },
+        timezoneOffset: {
+          type: 'integer',
+          required: true,
+          minimum: -720,
+          maximum: 840
+        },
         descripcion: {
           type: 'string',
           required: true
@@ -58,11 +64,6 @@ var DeviceSchema = {
         },
         lugar: {
           type: 'string',
-          required: true
-        },
-        timezoneOffset: {
-          type: 'string',
-          pattern: offsetPattern,
           required: true
         },
         variable_id: {
@@ -124,12 +125,10 @@ var DataSchema = {
                 items: {
                   type: 'object',
                   properties:{
-
                     time: {
                       type: 'number',
                       required: true,
-                      minimum: 1451606400000,
-                      maximum: new Date().getTime()
+                      minimum: 1451606400000
                     },
                     value: {
                       type: 'number',

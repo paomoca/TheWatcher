@@ -158,13 +158,6 @@ var queryWeekDayHour = function (db, query, id, callback){
 
   var UTCHour = parseInt(query.hour)
 
-  if(query.offset){
-    var offset = Math.round(parseInt(query.offset)/60)
-    UTCHour = UTCHour + offset
-  }
-
-  console.log('Converted to UTC == '+UTCHour);
-
   var collection = db.collection(id+'-hours')
 
   var project = {

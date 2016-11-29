@@ -1,5 +1,5 @@
 var ObjectId = require('mongodb').ObjectID
-var statistics = require('./statistics-functions.js')
+var statistics = require('./calculate-statistics.js')
 
 /*Inicia en launch(), por cada variable en la db realiza las siguientes acciones:
 
@@ -65,12 +65,12 @@ var launch = function(db){
   variables.find({}, {_id:1}).forEach(function(doc){
 
     var id = ObjectId(doc._id).toString()
-    var collection = db.collection(id)
+    var variableDataCollection = db.collection(id)
 
-    //Checa year
+    //Checa cada uno de los anios desde el anio minimo (2016) hasta el actual
     for(var y = minYear; y <= year; y++){
 
-      yearLoop(collection, id, y)
+      yearLoop(variableDataCollection, id, y)
 
     }
 
@@ -78,9 +78,9 @@ var launch = function(db){
 
 }
 
-var yearLoop = function(collection, id, y){
+var yearLoop = function(variableDataCollection, id, y){
 
-  collection.aggregate([projectY,{$match : { year: y }}]).toArray(function(err, docs) {
+  variableDataCollection.aggregate([projectY,{$match : { year: y }}]).toArray(function(err, docs) {
 
    //Esta variable si tiene el year en el loop, checa month
    if(docs.length != 0){
@@ -90,7 +90,7 @@ var yearLoop = function(collection, id, y){
      for(var m = 1; m <= 12; m++){
 
       statistics.yearStatistics(db, id, y, m)
-      monthLoop(collection, id, y, m)
+      monthLoop(variableDataCollection, id, y, m)
 
      }
 
@@ -100,9 +100,9 @@ var yearLoop = function(collection, id, y){
 
 }
 
-var monthLoop = function(collection, id, y, m){
+var monthLoop = function(variableDataCollection, id, y, m){
 
-  collection.aggregate([projectM,{$match : { year: y, month: m }}]).toArray(function(err, docs) {
+  variableDataCollection.aggregate([projectM,{$match : { year: y, month: m }}]).toArray(function(err, docs) {
 
     if(docs.length != 0){
 
@@ -111,7 +111,7 @@ var monthLoop = function(collection, id, y, m){
       for(var d = 1; d <= 31; d++){
 
         statistics.monthStatistics(db, id, y, m, d)
-        dayLoop(collection, id, y, m, d)
+        dayLoop(variableDataCollection, id, y, m, d)
 
      }
     }
@@ -120,10 +120,10 @@ var monthLoop = function(collection, id, y, m){
 
 }
 
-var dayLoop = function(collection, id, y, m, d){
+var dayLoop = function(variableDataCollection, id, y, m, d){
 
 
-  collection.aggregate([projectD,{$match : { year: y, month: m, day: d }}]).toArray(function(err, docs) {
+  variableDataCollection.aggregate([projectD,{$match : { year: y, month: m, day: d }}]).toArray(function(err, docs) {
 
     if(docs.length != 0){
 
