@@ -1,9 +1,7 @@
 var ObjectId = require('mongodb').ObjectID
 var statistics = require('./calculate-statistics.js')
-var db_functions = require('./db_functions.js')
 var date_validations = require('./date-validations.js')
 var moment = require('moment-timezone')
-
 
 /*Inicia en launch(), por cada variable en la db realiza las siguientes acciones:
 
@@ -54,14 +52,17 @@ var months = function(db, id, y, m, timezone){
 
   var obj = { year : y, month : m, day : 1, hour: 0 };
 
-  var minDate = moment.tz(obj, timezone).utc()
-  var maxDate = minDate.clone().add(1, 'month')
+  var minLocal = moment.tz(obj, timezone)
+  var maxLocal = minLocal.clone().add(1, 'month')
+
+  var minDate = minLocal.clone().utc()
+  var maxDate = maxLocal.clone().utc()
 
   statistics.monthStatistics(db, id, minDate.valueOf(), maxDate.valueOf(), function(err, hasData){
 
     if(hasData!= 0){
 
-      var daysInMonth = date_validations.getDaysInMonth(y,m)
+      var daysInMonth = minLocal.daysInMonth()
 
       for(var d = 1; d < daysInMonth; d++){
         days(db, id, y, m , d, timezone)
@@ -76,8 +77,11 @@ var days = function(db, id, y, m, d, timezone){
 
   var obj = { year : y, month : m, day : d, hour: 0 };
 
-  var minDate = moment.tz(obj, timezone).utc()
-  var maxDate = minDate.clone().add(1, 'day')
+  var minLocal = moment.tz(obj, timezone)
+  var maxLocal = minLocal.clone().add(1, 'day')
+
+  var minDate = minLocal.clone().utc()
+  var maxDate = maxLocal.clone().utc()
 
   statistics.dayStatistics(db, id, minDate.valueOf(), maxDate.valueOf(), function(err, hasData){
 
@@ -95,9 +99,11 @@ var hours = function(db, id, y, m, d, h, timezone){
 
   var obj = { year : y, month : m, day : d, hour: h };
 
-  var minDate = moment.tz(obj, timezone).utc()
-  var maxDate = minDate.clone().add(1, 'hour')
+  var minLocal = moment.tz(obj, timezone)
+  var maxLocal = minLocal.clone().add(1, 'hour')
 
+  var minDate = minLocal.clone().utc()
+  var maxDate = maxLocal.clone().utc()
 
   statistics.hourStatistics(db, id, minDate.valueOf(), maxDate.valueOf(), function(err, hasData){
 

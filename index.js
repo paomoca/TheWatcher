@@ -63,7 +63,6 @@ MongoClient.connect(url, function(err, database) {
       console.log('Done running Statistics');
     })
 
-
   });
 
   // var timestamp = 1480550400000,

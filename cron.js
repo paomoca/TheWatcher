@@ -1,14 +1,11 @@
 var ObjectId = require('mongodb').ObjectID
 
-var db_functions = require('./db_functions.js')
 var statistics = require('./calculate-statistics.js')
-var date_validations = require('./date-validations.js')
 var moment = require('moment-timezone')
 
 var runStatistics = function(db, timestamp, callback){
 
   var variables = db.collection('variables')
-  var date = new Date(timestamp)
 
   //Se obtiene cada una de las variables registradas en la base de datos
   variables.find({}, {_id:1, timezone:1}).forEach(function(doc){
@@ -58,5 +55,4 @@ var runStatistics = function(db, timestamp, callback){
 
 }
 
-//exports.runCronFunction = runCronFunction
 exports.runStatistics = runStatistics
