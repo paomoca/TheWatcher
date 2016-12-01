@@ -3,12 +3,17 @@ var MongoClient = require('mongodb').MongoClient
 var assert = require('assert')
 var validate = require('express-jsonschema').validate
 var bodyParser = require('body-parser')
+var cron = require('node-cron')
 
 var schemas = require('./schemas.js')
 var db_functions = require('./db_functions.js')
 var statistics_queries = require('./statistics-queries.js')
 var date_validations = require('./date-validations.js')
 var launch_routine = require('./launch-routine.js')
+var cron_functions = require('./cron.js')
+
+var statistics = require('./calculate-statistics.js')
+
 
 var app = express()
 //var jwt = require('express-jwt')
@@ -22,6 +27,11 @@ var app = express()
 
 app.use(bodyParser.json()) // support json encoded bodies
 app.use(bodyParser.urlencoded({ extended: true })) // support encoded bodies
+app.use(function(req, res, next) {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  next();
+});
 
 // Connection URL
 //var url = 'mongodb://172.16.73.145:27017/juan';
@@ -30,18 +40,35 @@ var url = 'mongodb://localhost:27017/myproject';
 
 // Use connect method to connect to the server
 MongoClient.connect(url, function(err, database) {
+
+    console.log(err);
   assert.equal(null, err);
   console.log("Connected successfully to server")
   db = database
 
-//  launch_routine.launch(db)
 
-  // var query = {
-  //   hour: 0,
-  //   weekDay: 1
-  // }
+//  launch_routine.launch(db)
+    launch_routine.run(db)
+
+  // var d = new Date(2016,2,20)
+  // console.log(d.getTime());
+  // console.log(d);
+
+  // cron.schedule('0 0-23 * * *', function(){
   //
-  // date_validations.calculateUTCWeekDayHour(query, -120)
+  //   console.log('****************************** running every HOUR from 1 to 23 ')
+  //
+  //   var now = new Date()
+  //
+  //   now.setUTCMinutes(0)
+  //   now.setUTCSeconds(0)
+  //   now.setUTCMilliseconds(0)
+  //   cron_functions.runCronFunction(now, function(msg){
+  //
+  //   })
+  //
+  // });
+
 
 });
 
@@ -402,7 +429,6 @@ app.get('/statistics/weekDay/:dataKey', validate({query: schemas.WeekDaySchema})
 
 // 5. WEEKDAY HOUR
 // Prueba: localhost:3000/statistics/weekDay/hour/582b7288009e5750e40a43ac?year=2016&weekDay=1&hour=19&type=mean
-//Prueba con timezone offset: localhost:3000/statistics/weekDay/hour/582b7288009e5750e40a43ac?year=2016&weekDay=1&hour=13&offset=360&type=mean
 app.get('/statistics/weekDay/hour/:dataKey', validate({query: schemas.WeekDayHourSchema}), function(req, res, next){
 
   //Get the timezoneOffset of the corresponding variable
@@ -431,14 +457,16 @@ app.get('/statistics/weekDay/hour/:dataKey', validate({query: schemas.WeekDayHou
 })
 
 // 6. RANGE DAY
-//Prueba: localhost:3000/statistics/range/day/582b7288009e5750e40a43ac?date2=1480194323000&date1=1451606400000&type=mean
+//Prueba: llocalhost:3000/statistics/range/day/583b235b9746d113699b4d4a?y1=2016&m1=2&d1=20&y2=2016&m2=11&d2=16&type=mean
 app.get('/statistics/range/day/:dataKey', validate({query: schemas.RangeDaySchema}),  function(req, res, next){
 
+  db_functions.getVariableOffset(db, req.params.dataKey, function(timezoneOffset){
 
-    date_validations.dateRangeValidation(req.query.date1, req.query.date2, function(err){
+    date_validations.calculateUTCRangeDay(req.query, timezoneOffset, function(err, query){
 
       if(!err){
-        statistics_queries.queryRangeDay(db, req.query, req.params.dataKey, function(err, docs){
+
+        statistics_queries.queryRangeDay(db, query, req.params.dataKey, function(err, docs){
 
           if(err){
             next(err)
@@ -453,105 +481,129 @@ app.get('/statistics/range/day/:dataKey', validate({query: schemas.RangeDaySchem
       }
     })
 
+  })
+
+
+    // date_validations.dateRangeValidation(req.query.date1, req.query.date2, function(err){
+    //
+    //   if(!err){
+    //     statistics_queries.queryRangeDay(db, req.query, req.params.dataKey, function(err, docs){
+    //
+    //       if(err){
+    //         next(err)
+    //       } else {
+    //         jsonRespose(res, 200, docs)
+    //       }
+    //
+    //     })
+    //
+    //   } else {
+    //     next(err)
+    //   }
+    // })
+
 })
 
 // 7. RANGE DAY HOUR
-//Prueba: localhost:3000/statistics/range/day/hour/582b7288009e5750e40a43ac?date2=1480194323000&date1=1451606400000&hour=10&type=mean
-//Prueba con timezone offset: localhost:3000/statistics/range/day/hour/582b7288009e5750e40a43ac?date2=1480194323000&date1=1451606400000&hour=4&offset=360&type=mean
+//Prueba: llocalhost:3000/statistics/range/day/hour/583b235b9746d113699b4d4a?y1=2016&m1=2&d1=20&y2=2016&m2=11&d2=16&hour=18&type=mean
 app.get('/statistics/range/day/hour/:dataKey', validate({query: schemas.RangeDayHourSchema}), function(req, res, next){
 
-  date_validations.dateRangeValidation(req.query.date1, req.query.date2, function(err){
+  db_functions.getVariableOffset(db, req.params.dataKey, function(timezoneOffset){
 
-    if(!err){
-      statistics_queries.queryRangeDayHour(db, req.query, req.params.dataKey, function(err, docs){
+    date_validations.calculateUTCRangeDayHour(req.query, timezoneOffset, function(err, query){
 
-        if(err){
-          next(err)
-        } else {
-          jsonRespose(res, 200, docs)
-        }
+      if(!err){
 
-      })
+        statistics_queries.queryRangeDayHour(db, query, req.params.dataKey, function(err, docs){
 
-    } else {
-      next(err)
-    }
+          if(err){
+            next(err)
+          } else {
+            jsonRespose(res, 200, docs)
+          }
+
+        })
+
+      } else {
+        next(err)
+      }
+    })
+
   })
-
 
 })
 
 /***************************************************************************/
 
-// 9. Peticiones de datos crudos: Restringidas a la API privada
-app.get('/data', validate({query: schemas.GetDataSchema}),  function (req, res) {
-
-  res.send('Good')
-})
-
-app.get('/data/variable/:dataKey', validate({query: schemas.GetDataSchema}),  function (req, res) {
-
-  //  res.status(201)
-  res.send(req.query)
-  // var variable = req.params.dataKey
-  // var start = +JSON.stringify(req.query.EPOCH_START)
-  // var end = JSON.stringify(req.query.EPOCH_END)
-
-  //  res.send(variable+' - '+start+' - '+end)
-  res.send('Good')
-})
-
-app.get('/data/device/:deviceKey', validate({query: schemas.GetDataSchema}),  function (req, res) {
-  //  res.status(201)
-  //res.send(req.params)
-  var device = req.params.deviceKey
-  var start = JSON.stringify(req.query.EPOCH_START)
-  var end = JSON.stringify(req.query.EPOCH_END)
-
-  res.send(req.query)
-
-})
-
-app.get('/data/:dataKey/:deviceKey', validate({query: schemas.GetDataSchema}),  function (req, res) {
-  //  res.status(201)
-  //res.send(req.params)
-  var variable = req.params.dataKey
-  var device = req.params.deviceKey
-
-  var start = JSON.stringify(req.query.EPOCH_START)
-  var end = JSON.stringify(req.query.EPOCH_END)
-
-  res.send(req.query)
-
-})
-
-// 10. Peticiones de datos estadísticos: API pública
-app.get('/statistics', validate({query: schemas.GetStatisticsSchema}),  function (req, res) {
-
-  var start = JSON.stringify(req.query.EPOCH_START)
-  var end = JSON.stringify(req.query.EPOCH_END)
-
-  res.send(req.query)
-
-})
-
-app.get('/statistics/:dataKey', validate({query: schemas.GetStatisticsSchema}),  function (req, res) {
-
-  var start = JSON.stringify(req.query.EPOCH_START)
-  var end = JSON.stringify(req.query.EPOCH_END)
-
-  res.send(req.query)
-
-})
-
-app.get('/statistics/:dataKey/:deviceKey', validate({query: schemas.GetStatisticsSchema}),  function (req, res) {
-
-  var start = JSON.stringify(req.query.EPOCH_START)
-  var end = JSON.stringify(req.query.EPOCH_END)
-
-  res.send(req.query)
-
-})
+// // 9. Peticiones de datos crudos: Restringidas a la API privada
+// app.get('/data', validate({query: schemas.GetDataSchema}),  function (req, res) {
+//
+//   res.send('Good')
+// })
+//
+// app.get('/data/variable/:dataKey', validate({query: schemas.GetDataSchema}),  function (req, res) {
+//
+//   //  res.status(201)
+//   res.send(req.query)
+//   // var variable = req.params.dataKey
+//   // var start = +JSON.stringify(req.query.EPOCH_START)
+//   // var end = JSON.stringify(req.query.EPOCH_END)
+//
+//   //  res.send(variable+' - '+start+' - '+end)
+//   res.send('Good')
+// })
+//
+// app.get('/data/device/:deviceKey', validate({query: schemas.GetDataSchema}),  function (req, res) {
+//   //  res.status(201)
+//   //res.send(req.params)
+//   var device = req.params.deviceKey
+//   var start = JSON.stringify(req.query.EPOCH_START)
+//   var end = JSON.stringify(req.query.EPOCH_END)
+//
+//   res.send(req.query)
+//
+// })
+//
+// app.get('/data/:dataKey/:deviceKey', validate({query: schemas.GetDataSchema}),  function (req, res) {
+//   //  res.status(201)
+//   //res.send(req.params)
+//   var variable = req.params.dataKey
+//   var device = req.params.deviceKey
+//
+//   var start = JSON.stringify(req.query.EPOCH_START)
+//   var end = JSON.stringify(req.query.EPOCH_END)
+//
+//   res.send(req.query)
+//
+// })
+//
+// // 10. Peticiones de datos estadísticos: API pública
+// app.get('/statistics', validate({query: schemas.GetStatisticsSchema}),  function (req, res) {
+//
+//   var start = JSON.stringify(req.query.EPOCH_START)
+//   var end = JSON.stringify(req.query.EPOCH_END)
+//
+//   res.send(req.query)
+//
+// })
+//
+// app.get('/statistics/:dataKey', validate({query: schemas.GetStatisticsSchema}),  function (req, res) {
+//
+//   var start = JSON.stringify(req.query.EPOCH_START)
+//   var end = JSON.stringify(req.query.EPOCH_END)
+//
+//   res.send(req.query)
+//
+// })
+//
+// app.get('/statistics/:dataKey/:deviceKey', validate({query: schemas.GetStatisticsSchema}),  function (req, res) {
+//
+//   var start = JSON.stringify(req.query.EPOCH_START)
+//   var end = JSON.stringify(req.query.EPOCH_END)
+//
+//   res.send(req.query)
+//
+// })
 
 /******************************************************************************************************/
 
@@ -578,6 +630,7 @@ app.use(function (err, req, res, next) {
   var responseData;
 
   if (err.name === 'JsonSchemaValidation' || err.name === 'InvalidKeys' || err.name === 'InvalidDateRange') {
+    console.log('Responded with error');
     // Log the error however you please
     //  console.log('Bad')
     //  console.log(err.message);
@@ -599,8 +652,8 @@ app.use(function (err, req, res, next) {
   } else {
     // pass error to next error middleware handler
     //  next(err);
-    res.status(444)
-    res.send()
+    res.status(400)
+    res.send('error')
   }
 })
 

@@ -4,7 +4,7 @@ var allowedTypes = '^(mode|median|mean)$'
 var yearPattern = '^[2]\\d\\d\\d$'
 var monthPattern = '^[1-9]$|^[1][0-2]$'
 var dayPattern = '^[1-9]$|^[1-2]\\d$|^[3][0-1]$'
-var hourPattern = '^[1-9]$|^[1]\\d$|^[2][0-4]$'
+var hourPattern = '^\\d$|^[1]\\d$|^[2][0-3]$'
 var weekDayPattern = '^[1-7]$'
 var offsetPattern = '^[1-9]$|^\\d\\d$|^[1-7]\\d\\d$|^[1-8][0-3]\\d$|^[1-8][4][0]$|^[-][1-9]$|^[-]\\d\\d$|^[-][1-6]\\d\\d$|^[-][1-7][2][0]$'
 var millisecondsPattern = '^\\d+$'
@@ -459,12 +459,34 @@ var RangeDaySchema = {
 
   type: 'object',
   properties: {
-    date1: {
-      pattern: millisecondsPattern,
+    y1 : {
+      type: 'string',
+      pattern: yearPattern,
       required: true
     },
-    date2: {
-      pattern: millisecondsPattern,
+    m1 : {
+      type: 'string',
+      pattern: monthPattern,
+      required: true
+    },
+    d1 : {
+      type: 'string',
+      pattern: dayPattern,
+      required: true
+    },
+    y2 : {
+      type: 'string',
+      pattern: yearPattern,
+      required: true
+    },
+    m2 : {
+      type: 'string',
+      pattern: monthPattern,
+      required: true
+    },
+    d2 : {
+      type: 'string',
+      pattern: dayPattern,
       required: true
     },
     type: {
@@ -479,20 +501,38 @@ var RangeDayHourSchema = {
 
   type: 'object',
   properties: {
+    y1 : {
+      type: 'string',
+      pattern: yearPattern,
+      required: true
+    },
+    m1 : {
+      type: 'string',
+      pattern: monthPattern,
+      required: true
+    },
+    d1 : {
+      type: 'string',
+      pattern: dayPattern,
+      required: true
+    },
+    y2 : {
+      type: 'string',
+      pattern: yearPattern,
+      required: true
+    },
+    m2 : {
+      type: 'string',
+      pattern: monthPattern,
+      required: true
+    },
+    d2 : {
+      type: 'string',
+      pattern: dayPattern,
+      required: true
+    },
     hour: {
       pattern: hourPattern,
-      required: true
-    },
-    offset: {
-      pattern: offsetPattern,
-      required: false
-    },
-    date1: {
-      pattern: millisecondsPattern,
-      required: true
-    },
-    date2: {
-      pattern: millisecondsPattern,
       required: true
     },
     type: {
