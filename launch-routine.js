@@ -35,7 +35,7 @@ var run = function(db){
 
     for(var y = minYear; y <= year; y++){
 
-      for(var m = 0; m < 11; m++){
+      for(var m = 0; m <= 11; m++){
 
         months(db, id, y, m, timezone)
 
@@ -62,9 +62,10 @@ var months = function(db, id, y, m, timezone){
 
     if(hasData!= 0){
 
-      var daysInMonth = minLocal.daysInMonth()
+      var daysInMonth = minDate.daysInMonth()
+      console.log(daysInMonth+' m:'+m);
 
-      for(var d = 1; d < daysInMonth; d++){
+      for(var d = 1; d <= daysInMonth; d++){
         days(db, id, y, m , d, timezone)
 
       }
@@ -86,7 +87,7 @@ var days = function(db, id, y, m, d, timezone){
   statistics.dayStatistics(db, id, minDate.valueOf(), maxDate.valueOf(), function(err, hasData){
 
     if(hasData != 0){
-      for(var h = 0; h < 23; h++){
+      for(var h = 0; h <= 23; h++){
         hours(db, id, y, m , d, h, timezone)
       }
     }
