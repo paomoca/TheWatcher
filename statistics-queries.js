@@ -2,6 +2,11 @@ var ObjectId = require('mongodb').ObjectID
 var db_functions = require('./db_functions.js')
 var moment = require('moment-timezone')
 
+var sort = {
+  $sort : {
+    value : 1
+  }
+}
 
 //Results for every month of that year
 var queryYear = function (db, query, id, callback){
@@ -45,7 +50,7 @@ var queryYear = function (db, query, id, callback){
     finalProject.$project[query.type] = 1
 
 
-    collection.aggregate([project, match, finalProject]).toArray(function(err, docs) {
+    collection.aggregate([project, match, finalProject, sort]).toArray(function(err, docs) {
       callback(err, docs)
     });
 
@@ -95,7 +100,7 @@ var queryMonth = function (db, query, id, callback){
     project.$project[query.type] = 1
     finalProject.$project[query.type] = 1
 
-    collection.aggregate([project,match,finalProject]).toArray(function(err, docs) {
+    collection.aggregate([project,match,finalProject, sort]).toArray(function(err, docs) {
       callback(err, docs)
     });
 
@@ -144,7 +149,7 @@ var queryDay = function (db, query, id, callback){
     project.$project[query.type] = 1
     finalProject.$project[query.type] = 1
 
-    collection.aggregate([project,match,finalProject]).toArray(function(err, docs) {
+    collection.aggregate([project,match,finalProject, sort]).toArray(function(err, docs) {
       callback(err, docs)
     });
 
@@ -196,7 +201,7 @@ var queryWeekDay = function (db, query, id, callback){
     project.$project[query.type] = 1
     finalProject.$project[query.type] = 1
 
-    collection.aggregate([project,match,finalProject]).toArray(function(err, docs) {
+    collection.aggregate([project,match,finalProject, sort]).toArray(function(err, docs) {
       callback(err, docs)
     });
 
@@ -252,7 +257,7 @@ var queryWeekDayHour = function (db, query, id, callback){
     project.$project[query.type] = 1
     finalProject.$project[query.type] = 1
 
-    collection.aggregate([project, match, finalProject]).toArray(function(err, docs) {
+    collection.aggregate([project, match, finalProject, sort]).toArray(function(err, docs) {
       callback(err, docs)
     });
 
@@ -290,7 +295,7 @@ var queryRangeDay = function (db, query, id, callback){
 
     finalProject.$project[query.type] = 1
 
-    collection.aggregate([match,finalProject]).toArray(function(err, docs) {
+    collection.aggregate([match,finalProject, sort]).toArray(function(err, docs) {
       callback(err, docs)
     });
 
@@ -341,7 +346,7 @@ var queryRangeDayHour = function (db, query, id, callback){
     project.$project[query.type] = 1
     finalProject.$project[query.type] = 1
 
-    collection.aggregate([project, match, finalProject]).toArray(function(err, docs) {
+    collection.aggregate([project, match, finalProject, sort]).toArray(function(err, docs) {
       callback(err, docs)
     });
 
