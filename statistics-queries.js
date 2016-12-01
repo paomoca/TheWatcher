@@ -296,8 +296,6 @@ var queryRangeDay = function (db, query, id, callback){
 
   })
 
-
-
 }
 
 var queryRangeDayHour = function (db, query, id, callback){
