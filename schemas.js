@@ -29,11 +29,9 @@ var VariableSchema = {
           type: 'string',
           required: true
         },
-        timezoneOffset: {
-          type: 'integer',
-          required: true,
-          minimum: -720,
-          maximum: 840
+        timezone: {
+          type: 'string',
+          required: false
         },
         descripcion: {
           type: 'string',
