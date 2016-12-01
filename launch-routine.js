@@ -62,10 +62,9 @@ var months = function(db, id, y, m, timezone){
 
     if(hasData!= 0){
 
-      var daysInMonth = minDate.daysInMonth()
-      console.log(daysInMonth+' m:'+m);
-
+      var daysInMonth = minLocal.daysInMonth()
       for(var d = 1; d <= daysInMonth; d++){
+        
         days(db, id, y, m , d, timezone)
 
       }
