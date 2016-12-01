@@ -487,6 +487,23 @@ app.get('/statistics/range/day/hour/:dataKey', validate({query: schemas.RangeDay
 
 })
 
+// 8. LAST 45 RAW MEASUREMENT ENTRIES
+//Prueba: localhost:3000/statistics/last/raw/583f845393e5b820ac46dcfd
+app.get('/statistics/last/raw/:dataKey', function(req, res, next){
+
+  db_functions.findLastMeasurements(db, req.params.dataKey, function(err, docs){
+
+    if(err){
+      next(err)
+    } else {
+      jsonRespose(res, 200, docs)
+    }
+
+  })
+
+})
+
+
 /***************************************************************************/
 
 // // 9. Peticiones de datos crudos: Restringidas a la API privada

@@ -147,16 +147,6 @@ var findVariableDevices = function(db, dataKey, callback){
 
 }
 
-var getVariableOffset = function (db, dataKey, callback){
-
-  getVariableTimezone(db, dataKey, function(timezone){
-
-    callback(moment.tz.zone(timezone).offset(1403465838805))
-
-  })
-
-}
-
 var getVariableTimezone = function (db, dataKey, callback){
 
   var collection = db.collection('variables')
@@ -170,6 +160,16 @@ var getVariableTimezone = function (db, dataKey, callback){
     }
 
 
+  })
+
+}
+
+var findLastMeasurements = function(db, dataKey, callback){
+
+  var collection = db.collection(dataKey)
+
+  collection.find({}).sort({ date: 1 }).limit(45).toArray(function(err, docs) {
+    callback(err, docs)
   })
 
 }
@@ -201,18 +201,17 @@ var removeDocument = function(db, callback) {
   });
 }
 
-exports.insertVariable = insertVariable;
-exports.insertDevice = insertDevice;
-exports.insertData = insertData;
+exports.insertVariable = insertVariable
+exports.insertDevice = insertDevice
+exports.insertData = insertData
 
-exports.findAllVariables = findAllVariables;
-exports.findVariableDevices = findVariableDevices;
-exports.findVariable = findVariable;
-exports.findDevice = findDevice;
+exports.findAllVariables = findAllVariables
+exports.findVariableDevices = findVariableDevices
+exports.findVariable = findVariable
+exports.findDevice = findDevice
 
-exports.getVariableOffset = getVariableOffset;
+exports.updateDocument = updateDocument
+exports.removeDocument = removeDocument
 
-exports.updateDocument = updateDocument;
-exports.removeDocument = removeDocument;
-
-exports.getVariableTimezone = getVariableTimezone;
+exports.getVariableTimezone = getVariableTimezone
+exports.findLastMeasurements = findLastMeasurements
