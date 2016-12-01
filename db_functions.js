@@ -154,6 +154,22 @@ var getVariableOffset = function (db, dataKey, callback){
 
 }
 
+var getVariableTimezone = function (db, dataKey, callback){
+
+  var collection = db.collection('variables')
+
+  collection.findOne({_id: ObjectId(dataKey)},{ fields: { timezone: 1, _id: 0}}, function(err, doc){
+
+    if(err || !doc.timezone){
+      callback("America/Mexico_City")
+    } else {
+      callback(doc.timezone)
+    }
+
+
+  })
+
+}
 
 /***************************************************************************/
 
@@ -195,3 +211,5 @@ exports.getVariableOffset = getVariableOffset;
 
 exports.updateDocument = updateDocument;
 exports.removeDocument = removeDocument;
+
+exports.getVariableTimezone = getVariableTimezone;

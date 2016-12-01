@@ -4,6 +4,8 @@ var assert = require('assert')
 var validate = require('express-jsonschema').validate
 var bodyParser = require('body-parser')
 var cron = require('node-cron')
+var moment = require('moment-timezone')
+
 
 var schemas = require('./schemas.js')
 var db_functions = require('./db_functions.js')
@@ -45,13 +47,7 @@ MongoClient.connect(url, function(err, database) {
   console.log("Connected successfully to server")
   db = database
 
-    //launch_routine.run(db)
-
-    for(var m = 0; m < 11; m++){
-
-      console.log('m: '+m+' days: '+date_validations.getDaysInMonth(2016, m));
-    }
-
+  launch_routine.run(db)
 
   cron.schedule('0 0-23 * * *', function(){
 
@@ -62,11 +58,54 @@ MongoClient.connect(url, function(err, database) {
     now.setUTCMinutes(0)
     now.setUTCSeconds(0)
     now.setUTCMilliseconds(0)
-    cron_functions.runCronFunction(now, function(msg){
 
+    cron_functions.runStatistics(db, now.getTime(), function(msg){
+      console.log('Done running Statistics');
     })
 
+
   });
+
+  // var timestamp = 1480550400000,
+  //     date = new Date(timestamp);
+  //
+  // var m = moment.tz(timestamp, "America/Mexico_City") // 2014-06-22T11:21:08-07:00
+  // var utc = m.clone().utc()
+
+  // moment.tz.names().forEach(function(item, index){
+  //   console.log(item);
+  // })
+
+  // console.log(m.format());
+  // console.log(utc.format());
+  //
+  // console.log(m.date());
+  // console.log(m.day());
+  // console.log(m.month());
+  // console.log(m.year());
+  // console.log(m.hour());
+  //
+  // console.log('\n');
+  //
+  // console.log(utc.date());
+  // console.log(utc.day());
+  // console.log(utc.month());
+  // console.log(utc.year());
+  // console.log(utc.hour());
+  //
+  // var arr = [2013, 5, 1],
+  //     str = "2013-12-01",
+  //     obj = { year : 2016, month :10, day : 1, hour: 15 };
+  //
+  //     var l = moment.tz(obj, "America/Mexico_City")
+  //
+  //     console.log(l.utc().format());
+  //
+  //
+  //
+  // // moment.tz.names().forEach(function(item, index){
+  // //   console.log(item);
+  // // })
 
 
 });
@@ -151,11 +190,11 @@ app.post('/device', validate({body: schemas.DeviceSchema}), function (req, res, 
 app.get('/variables', function (req, res) {
 
   db_functions.findAllVariables(db, function(err, docs){
-     if(err){
-        next(err)
-      } else {
-        jsonRespose(res, 200, docs)
-      }
+    if(err){
+      next(err)
+    } else {
+      jsonRespose(res, 200, docs)
+    }
   })
 
 })
@@ -164,11 +203,11 @@ app.get('/variables', function (req, res) {
 app.get('/variable/:variable_id', function (req, res) {
 
   db_functions.findVariable(db, req.params.variable_id, function(err, docs){
-     if(err){
-        next(err)
-      } else {
-        jsonRespose(res, 200, docs)
-      }
+    if(err){
+      next(err)
+    } else {
+      jsonRespose(res, 200, docs)
+    }
   })
 
 })
@@ -177,11 +216,11 @@ app.get('/variable/:variable_id', function (req, res) {
 app.get('/devices/:variable_id', function (req, res) {
 
   db_functions.findVariableDevices(db, req.params.variable_id, function(err, docs){
-     if(err){
-        next(err)
-      } else {
-        jsonRespose(res, 200, docs)
-      }
+    if(err){
+      next(err)
+    } else {
+      jsonRespose(res, 200, docs)
+    }
   })
 
 })
@@ -190,11 +229,11 @@ app.get('/devices/:variable_id', function (req, res) {
 app.get('/device/:device_id', function (req, res) {
 
   db_functions.findDevice(db, req.params.device_id, function(err, docs){
-     if(err){
-        next(err)
-      } else {
-        jsonRespose(res, 200, docs)
-      }
+    if(err){
+      next(err)
+    } else {
+      jsonRespose(res, 200, docs)
+    }
   })
 
 })
@@ -483,23 +522,23 @@ app.get('/statistics/range/day/:dataKey', validate({query: schemas.RangeDaySchem
   })
 
 
-    // date_validations.dateRangeValidation(req.query.date1, req.query.date2, function(err){
-    //
-    //   if(!err){
-    //     statistics_queries.queryRangeDay(db, req.query, req.params.dataKey, function(err, docs){
-    //
-    //       if(err){
-    //         next(err)
-    //       } else {
-    //         jsonRespose(res, 200, docs)
-    //       }
-    //
-    //     })
-    //
-    //   } else {
-    //     next(err)
-    //   }
-    // })
+  // date_validations.dateRangeValidation(req.query.date1, req.query.date2, function(err){
+  //
+  //   if(!err){
+  //     statistics_queries.queryRangeDay(db, req.query, req.params.dataKey, function(err, docs){
+  //
+  //       if(err){
+  //         next(err)
+  //       } else {
+  //         jsonRespose(res, 200, docs)
+  //       }
+  //
+  //     })
+  //
+  //   } else {
+  //     next(err)
+  //   }
+  // })
 
 })
 

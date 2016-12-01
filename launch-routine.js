@@ -2,6 +2,8 @@ var ObjectId = require('mongodb').ObjectID
 var statistics = require('./calculate-statistics.js')
 var db_functions = require('./db_functions.js')
 var date_validations = require('./date-validations.js')
+var moment = require('moment-timezone')
+
 
 /*Inicia en launch(), por cada variable en la db realiza las siguientes acciones:
 
@@ -22,17 +24,22 @@ var run = function(db){
 
   var year = new Date().getUTCFullYear()
 
-  db.collection('variables').find({}, {_id:1, timezoneOffset:1}).forEach(function(doc){
+  db.collection('variables').find({}, {_id:1, timezone:1}).forEach(function(doc){
 
     var id = ObjectId(doc._id).toString()
     var variableDataCollection = db.collection(id)
-    var timezoneOffset = doc.timezoneOffset
+
+    if(doc.timezone){
+      var timezone = doc.timezone
+    } else {
+      var timezone = "America/Mexico_City"
+    }
 
     for(var y = minYear; y <= year; y++){
 
       for(var m = 0; m < 11; m++){
 
-        months(db, id, y, m, timezoneOffset)
+        months(db, id, y, m, timezone)
 
       }
 
@@ -43,65 +50,59 @@ var run = function(db){
 
 }
 
-var months = function(db, id, y, m, timezoneOffset){
+var months = function(db, id, y, m, timezone){
 
-  var d = 1
-  var h = 0
+  var obj = { year : y, month : m, day : 1, hour: 0 };
 
-  date_validations.calculateUTCOffset(y, m, d, h, timezoneOffset, function(UTCTimestamp){
-    var min = UTCTimestamp
-    date_validations.calculateUTCOffset(y, m+1, d, h, timezoneOffset, function(UTCTimestamp){
-      var max = UTCTimestamp
-      statistics.monthStatistics(db, id, min, max, function(err, hasData){
+  var minDate = moment.tz(obj, timezone).utc()
+  var maxDate = minDate.clone().add(1, 'month')
 
-        if(hasData!= 0){
-          var daysInMonth = date_validations.getDaysInMonth(y,m)
-          for(var d = 1; d < daysInMonth; d++){
-            days(db, id, y, m , d, timezoneOffset)
+  statistics.monthStatistics(db, id, minDate.valueOf(), maxDate.valueOf(), function(err, hasData){
 
-          }
+    if(hasData!= 0){
 
-        }
-      })
+      var daysInMonth = date_validations.getDaysInMonth(y,m)
 
-    })
+      for(var d = 1; d < daysInMonth; d++){
+        days(db, id, y, m , d, timezone)
+
+      }
+    }
   })
+
 }
 
-var days = function(db, id, y, m, d, timezoneOffset){
+var days = function(db, id, y, m, d, timezone){
 
-  var h = 0
+  var obj = { year : y, month : m, day : d, hour: 0 };
 
-  date_validations.calculateUTCOffset(y, m, d, h, timezoneOffset, function(UTCTimestamp){
-    var min = UTCTimestamp
-    date_validations.calculateUTCOffset(y, m , d+1, h, timezoneOffset, function(UTCTimestamp){
-      var max = UTCTimestamp
-      statistics.dayStatistics(db, id, min, max, function(err, hasData){
+  var minDate = moment.tz(obj, timezone).utc()
+  var maxDate = minDate.clone().add(1, 'day')
 
-        if(hasData != 0){
-          for(var h = 0; h < 23; h++){
-            hours(db, id, y, m , d, h, timezoneOffset)
-          }
-        }
+  statistics.dayStatistics(db, id, minDate.valueOf(), maxDate.valueOf(), function(err, hasData){
 
-      })
+    if(hasData != 0){
+      for(var h = 0; h < 23; h++){
+        hours(db, id, y, m , d, h, timezone)
+      }
+    }
 
-    })
   })
+
 }
 
-var hours = function(db, id, y, m, d, h, timezoneOffset){
+var hours = function(db, id, y, m, d, h, timezone){
 
-  date_validations.calculateUTCOffset(y, m, d, h, timezoneOffset, function(UTCTimestamp){
-    var min = UTCTimestamp
-    date_validations.calculateUTCOffset(y, m, d, h+1, timezoneOffset, function(UTCTimestamp){
-      var max = UTCTimestamp
-      statistics.hourStatistics(db, id, min, max, function(err, hasData){
+  var obj = { year : y, month : m, day : d, hour: h };
 
-      })
+  var minDate = moment.tz(obj, timezone).utc()
+  var maxDate = minDate.clone().add(1, 'hour')
 
-    })
+
+  statistics.hourStatistics(db, id, minDate.valueOf(), maxDate.valueOf(), function(err, hasData){
+
   })
+
 }
 
 

@@ -3,66 +3,60 @@ var ObjectId = require('mongodb').ObjectID
 var db_functions = require('./db_functions.js')
 var statistics = require('./calculate-statistics.js')
 var date_validations = require('./date-validations.js')
+var moment = require('moment-timezone')
 
-var runCronFunction = function(now, callback){
-
-  var UTCHour = now.getUTCHours()
-  var UTCDay = now.getUTCDate()
+var runStatistics = function(db, timestamp, callback){
 
   var variables = db.collection('variables')
+  var date = new Date(timestamp)
 
   //Se obtiene cada una de las variables registradas en la base de datos
-  variables.find({}, {_id:1}).forEach(function(doc){
+  variables.find({}, {_id:1, timezone:1}).forEach(function(doc){
 
     var id = ObjectId(doc._id).toString()
     var variableDataCollection = db.collection(id)
 
-    //Estadisticas de la hora pasada
-    statistics.previousHourStatistics(db, id, now.getTime())
+    if(doc.timezone){
+      var timezone = doc.timezone
+    } else {
+      var timezone = "America/Mexico_City"
+    }
 
-    //Obtiene el timezoneOffset de la variable para decidir si hay un cambio de
-    //mes o dia en la hora local de la variable
-    db_functions.getVariableOffset(db, id, function(timezoneOffset){
+    var localVariableTime = moment.tz(timestamp, timezone)
+    var localHour = localVariableTime.hour()
+    var localDay = localVariableTime.date()
+    var localMinutes = localVariableTime.minutes()
 
-      //Calcula la hora local de la variable segun su timezoneOffset
-      date_validations.calculateVariableLocalHour(UTCHour, timezoneOffset, function(localHour, dayOffset){
-        //
-        // console.log('UTCHour: '+ UTCHour)
-        // console.log('local: '+ localHour)
-        // console.log('dayOffset: '+ dayOffset)
+    if(localMinutes == 0){
+      //Estadisticas de la hora pasada
+      statistics.previousHourStatistics(db, id, timestamp)
+    }
 
-        //Verifica si en la fecha local de la variable la hora es 0
-        //Hora 0 representa un cambio de dia
-        if(localHour == 0){
+    //Verifica si en la fecha local de la variable la hora es 0
+    //Hora 0 representa un cambio de dia
+    if(localHour == 0 && localMinutes == 0){
+      //Estadisticas del dia
+      statistics.previousDayStatistics(db, id, timestamp)
+    }
 
-          //Estadisticas del dia
-          statistics.previousDayStatistics(db, id, now.getTime())
+    //Verifica si en la fecha local de la variable el dia es uno
+    //Dia 1 representa un cambio de mes
+    if(localHour == 0 && localDay == 1){
+      //Estadisticas del mes
+      statistics.previousMonthStatistics(db, id, timestamp)
+    }
 
-          //Calcula el dia local de la variable segun su timezoneOffset
-          date_validations.calculateVariableLocalDay(now, dayOffset, function(localDay){
+    // console.log('\n '+timezone);
+    // console.log(date)
+    // console.log(localVariableTime.date());
+    // console.log(localVariableTime.day());
+    // console.log(localVariableTime.month());
+    // console.log(localVariableTime.year());
+    // console.log(localVariableTime.hour());
 
-            //Verifica si en la fecha local de la variable el dia es uno
-            //Dia 1 representa un cambio de mes
-            if(localDay == 1){
-
-              //Estadisticas del mes
-              statistics.previousMonthStatistics(db, id, now.getTime())
-            }
-
-            // console.log('UTCDay: '+UTCDay)
-            // console.log('local DAY: '+localDay)
-          })
-
-        }
-
-
-
-      })
-
-    })
-
-  });
+  })
 
 }
 
-exports.runCronFunction = runCronFunction
+//exports.runCronFunction = runCronFunction
+exports.runStatistics = runStatistics
