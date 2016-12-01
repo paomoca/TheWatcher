@@ -7,6 +7,12 @@ var insertVariable = function(db, body, callback) {
 
   collection.insertOne(body, function(err, result) {
     callback(err,result)
+    if(!err){
+      var variable_id = result.insertedId
+      db.collection(variable_id.toString()).createIndex({date:1}, {}, function(){
+        console.log('indexed new collection');
+      })
+    }
   })
 }
 

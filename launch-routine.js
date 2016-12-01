@@ -64,7 +64,7 @@ var months = function(db, id, y, m, timezone){
 
       var daysInMonth = minLocal.daysInMonth()
       for(var d = 1; d <= daysInMonth; d++){
-        
+
         days(db, id, y, m , d, timezone)
 
       }
