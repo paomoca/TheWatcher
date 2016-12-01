@@ -41,33 +41,32 @@ var url = 'mongodb://localhost:27017/myproject';
 // Use connect method to connect to the server
 MongoClient.connect(url, function(err, database) {
 
-    console.log(err);
   assert.equal(null, err);
   console.log("Connected successfully to server")
   db = database
 
+    //launch_routine.run(db)
 
-//  launch_routine.launch(db)
-    launch_routine.run(db)
+    for(var m = 0; m < 11; m++){
 
-  // var d = new Date(2016,2,20)
-  // console.log(d.getTime());
-  // console.log(d);
+      console.log('m: '+m+' days: '+date_validations.getDaysInMonth(2016, m));
+    }
 
-  // cron.schedule('0 0-23 * * *', function(){
-  //
-  //   console.log('****************************** running every HOUR from 1 to 23 ')
-  //
-  //   var now = new Date()
-  //
-  //   now.setUTCMinutes(0)
-  //   now.setUTCSeconds(0)
-  //   now.setUTCMilliseconds(0)
-  //   cron_functions.runCronFunction(now, function(msg){
-  //
-  //   })
-  //
-  // });
+
+  cron.schedule('0 0-23 * * *', function(){
+
+    console.log('****************************** running every HOUR from 1 to 23 ')
+
+    var now = new Date()
+
+    now.setUTCMinutes(0)
+    now.setUTCSeconds(0)
+    now.setUTCMilliseconds(0)
+    cron_functions.runCronFunction(now, function(msg){
+
+    })
+
+  });
 
 
 });

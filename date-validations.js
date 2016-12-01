@@ -233,40 +233,55 @@ var calculateUTCOffset = function(y, m, d, h, timezoneOffset, callback){
 
 }
 
-var previousDayDate = function(nowTimestamp, callback){
-
-  var previousDayTimestamp = nowTimestamp - 24 * 60 * 60 * 1000
-  callback(previousDayTimestamp)
-
-}
-
-var nextDayDate = function(nowTimestamp, callback){
-
-  var nextDayTimestamp = nowTimestamp + 24 * 60 * 60 * 1000
-  callback(nextDayTimestamp)
-
-}
-
-var previousHourDate = function(nowTimestamp, callback){
-
-  var previousHourTimestamp = nowTimestamp - 1 * 60 * 60 * 1000
-  callback(previousHourTimestamp)
-
-}
-
-var nextHourDate = function(nowTimestamp, callback){
-
-  var nextHourTimestamp = nowTimestamp + 1 * 60 * 60 * 1000
-  callback(nextHourTimestamp)
-
-}
-
-var getDaysInMonth = function(month,year) {
+var getDaysInMonth = function(year,month) {
   // Here January is 1 based
   //Day 0 is the last day in the previous month
  //return new Date(year, month, 0).getDate();
 // Here January is 0 based
  return new Date(year, month+1, 0).getDate();
+}
+
+var calculateVariableLocalHour = function(UTCHour, timezoneOffset, callback){
+
+  var localHour = ((UTCHour*60) - timezoneOffset)/60
+  console.log('\ncalculatedLocalHour: '+localHour)
+  var dayOffset = 0
+
+  //If the hour is greater than 24 it means we moved to the next weekDay
+  if(localHour >= 24){
+    localHour = localHour - 24
+    dayOffset = 1
+  }
+
+  //If the hour is a negative number it means we go back one weekDay
+  if(localHour < 0){
+    localHour = localHour + 24
+    dayOffset = -1
+  }
+
+  callback(localHour, dayOffset)
+}
+
+var calculateVariableLocalDay = function(now, dayOffset, callback){
+
+  var time = now.getTime()
+  var offset = dayOffset * 24 * 60 * 60 * 1000
+
+  var offsetedTime = time + offset
+  var offsetedDate = new Date(offsetedTime)
+
+  var localDay = offsetedDate.getUTCDate()
+
+  callback(localDay)
+
+}
+
+var calculatePreviousHourTimestamp = function(now, callback){
+
+  var previousHourTimestamp = now - 1 * 60 * 60 * 1000
+
+  callback(previousHourTimestamp)
+
 }
 
 var cleanDate = function(){
@@ -280,9 +295,8 @@ exports.cleanDate = cleanDate
 exports.calculateUTCWeekDayHour = calculateUTCWeekDayHour
 exports.calculateUTCOffset = calculateUTCOffset
 
-exports.previousDayDate = previousDayDate
-exports.nextDayDate = nextDayDate
-exports.previousHourDate = previousHourDate
-exports.nextHourDate = nextHourDate
-
 exports.getDaysInMonth = getDaysInMonth
+
+exports.calculateVariableLocalHour = calculateVariableLocalHour
+exports.calculateVariableLocalDay = calculateVariableLocalDay
+exports.calculatePreviousHourTimestamp = calculatePreviousHourTimestamp

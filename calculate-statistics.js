@@ -6,6 +6,15 @@ var date_validations = require('./date-validations.js')
 var minUTCTimestamp = 1451606400000
 var minUTC = new Date(minUTCTimestamp)
 
+var project = {
+  $project:
+  {
+    value : 1,
+    date : 1,
+    _id : 0,
+  }
+}
+
 var projectValue = {
   $project:
   {
@@ -18,28 +27,19 @@ var hourStatistics = function(db, id, minTimestamp, maxTimestamp, callback){
 
   var timestamp = new Date(minTimestamp)
 
-  var project = {
-    $project:
-    {
-      value : 1,
-      date : 1,
-      _id : 0,
-    }
-  }
-
   var match = {
     $match : {  $and: [
       { date: { $gte: new Date(minTimestamp) } },
-      { date: { $lte: new Date(maxTimestamp) } }
+      { date: { $lt: new Date(maxTimestamp) } }
     ] }
   }
 
 
-    var collection = db.collection(id)
+  var collection = db.collection(id)
 
-    var cursor = collection.aggregate([project,match, projectValue]).toArray(function(err, docs) {
+  var cursor = collection.aggregate([project,match, projectValue]).toArray(function(err, docs) {
 
-     if(docs.length != 0){
+    if(docs.length != 0){
 
       var mappedArray = docs.map(function (item) { return item.value; });
       var results = generateStatisticsDocument(mappedArray, timestamp)
@@ -64,28 +64,19 @@ var dayStatistics = function(db, id, minTimestamp, maxTimestamp, callback){
 
   var timestamp = new Date(minTimestamp)
 
-  var project = {
-    $project:
-    {
-      value : 1,
-      date : 1,
-      _id : 0,
-    }
-  }
-
   var match = {
     $match : {  $and: [
       { date: { $gte: new Date(minTimestamp) } },
-      { date: { $lte: new Date(maxTimestamp) } }
+      { date: { $lt: new Date(maxTimestamp) } }
     ] }
   }
 
 
-    var collection = db.collection(id)
+  var collection = db.collection(id)
 
-    var cursor = collection.aggregate([project,match, projectValue]).toArray(function(err, docs) {
+  var cursor = collection.aggregate([project,match, projectValue]).toArray(function(err, docs) {
 
-     if(docs.length != 0){
+    if(docs.length != 0){
 
       var mappedArray = docs.map(function (item) { return item.value; });
       var results = generateStatisticsDocument(mappedArray, timestamp)
@@ -109,28 +100,19 @@ var monthStatistics = function(db, id, minTimestamp, maxTimestamp, callback){
 
   var timestamp = new Date(minTimestamp)
 
-  var project = {
-    $project:
-    {
-      value : 1,
-      date : 1,
-      _id : 0,
-    }
-  }
-
   var match = {
     $match : {  $and: [
       { date: { $gte: new Date(minTimestamp) } },
-      { date: { $lte: new Date(maxTimestamp) } }
+      { date: { $lt: new Date(maxTimestamp) } }
     ] }
   }
 
 
-    var collection = db.collection(id)
+  var collection = db.collection(id)
 
-    var cursor = collection.aggregate([project,match, projectValue]).toArray(function(err, docs) {
+  var cursor = collection.aggregate([project,match, projectValue]).toArray(function(err, docs) {
 
-     if(docs.length != 0){
+    if(docs.length != 0){
 
       var mappedArray = docs.map(function (item) { return item.value; });
       var results = generateStatisticsDocument(mappedArray, timestamp)
@@ -160,44 +142,9 @@ var previousHourStatistics = function(db, id, nowTimestamp){
   console.log(new Date(previousHourTimestamp))
   console.log(new Date(nowTimestamp))
 
+  hourStatistics(db, id, previousHourTimestamp, nowTimestamp, function(err,hasData){
 
-  var timestamp = new Date(previousHourTimestamp)
-
-  var project = {
-    $project:
-    {
-      value : 1,
-      date : 1,
-      _id : 0,
-    }
-  }
-
-  var match = {
-    $match : {  $and: [
-      { date: { $gte: new Date(previousHourTimestamp) } },
-      { date: { $lte: new Date(nowTimestamp) } }
-    ] }
-  }
-
-
-    var collection = db.collection(id)
-
-    var cursor = collection.aggregate([project,match, projectValue]).toArray(function(err, docs) {
-
-     if(docs.length != 0){
-
-      var mappedArray = docs.map(function (item) { return item.value; });
-      var results = generateStatisticsDocument(mappedArray, timestamp)
-
-      db.collection(id+'-hours').update({timestamp: timestamp}, results, { upsert: true }, function(err,res){
-        console.log(id+': HOURS '+timestamp);
-      })
-
-    }
-
-  });
-
-
+  })
 
 }
 
@@ -209,88 +156,36 @@ var previousDayStatistics = function(db, id, nowTimestamp){
   console.log(new Date(previousDayTimestamp))
   console.log(new Date(nowTimestamp))
 
-  var timestamp = new Date(previousDayTimestamp)
+  dayStatistics(db, id, previousDayTimestamp, nowTimestamp, function(err,hasData){
 
-  var project = {
-    $project:
-    {
-      value : 1,
-      date : 1,
-      _id : 0,
-    }
-  }
-
-  var match = {
-    $match : {  $and: [
-      { date: { $gte: new Date(previousDayTimestamp) } },
-      { date: { $lte: new Date(nowTimestamp) } }
-    ] }
-  }
-
-
-    var collection = db.collection(id)
-
-    var cursor = collection.aggregate([project,match, projectValue]).toArray(function(err, docs) {
-
-     if(docs.length != 0){
-
-      var mappedArray = docs.map(function (item) { return item.value; });
-      var results = generateStatisticsDocument(mappedArray, timestamp)
-
-      db.collection(id+'-day').update({timestamp: timestamp}, results, { upsert: true }, function(err,res){
-        console.log(id+': DAY '+timestamp);
-      })
-
-    }
-
-  });
-
+  })
 
 }
 
 var previousMonthStatistics = function(db, id, nowTimestamp){
 
-  var month = new Date(nowTimestamp).getUTCMonth()
+  var now = new Date(nowTimestamp)
+  var month = now.getUTCMonth()
+  var year = now.getUTCFullYear()
 
-  var previousMonthDate = new Date(nowTimestamp)
-  previousMonthDate.setUTCMonth(month-1)
-  var previousMonthTimestamp = previousMonthDate.getTime()
-
-  var timestamp = new Date(previousMonthTimestamp)
-
-  var project = {
-    $project:
-    {
-      value : 1,
-      date : 1,
-      _id : 0,
-    }
+  if(month==0){
+    var prevMonth = 11
+    var prevYear = year-1
+  } else {
+    var prevMonth = month-1
+    var prevYear = year
   }
 
-  var match = {
-    $match : {  $and: [
-      { date: { $gte: new Date(previousMonthTimestamp) } },
-      { date: { $lte: new Date(nowTimestamp) } }
-    ] }
-  }
+  var minTimestamp = new Date(prevYear, prevMonth, 1, 0, 0, 0, 0).getTime()
+  var maxTimestamp = new Date(year, month, 1, 0, 0, 0, 0).getTime()
 
+  console.log('\nMES')
+  console.log(new Date(minTimestamp))
+  console.log(new Date(maxTimestamp))
 
-    var collection = db.collection(id)
+  monthStatistics(db, id, minTimestamp, maxTimestamp, function(err,hasData){
 
-    var cursor = collection.aggregate([project,match, projectValue]).toArray(function(err, docs) {
-
-     if(docs.length != 0){
-
-      var mappedArray = docs.map(function (item) { return item.value; });
-      var results = generateStatisticsDocument(mappedArray, timestamp)
-
-      db.collection(id+'-month').update({timestamp: timestamp}, results, { upsert: true }, function(err,res){
-        console.log(id+': MONTH '+timestamp);
-      })
-
-    }
-
-  });
+  })
 
 }
 
