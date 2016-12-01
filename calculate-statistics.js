@@ -41,22 +41,21 @@ var hourStatistics = function(db, id, minTimestamp, maxTimestamp, callback){
 
     if(docs.length != 0){
 
-      var mappedArray = docs.map(function (item) { return item.value; });
-      var results = generateStatisticsDocument(mappedArray, timestamp)
+      callback(err, docs.length)
 
-      db.collection(id+'-hours').update({timestamp: timestamp}, results, { upsert: true }, function(err,res){
-        console.log(id+': HOURS '+timestamp);
+      var mappedArray = docs.map(function (item) { return item.value; });
+      generateStatisticsDocument(mappedArray, timestamp, function(results){
+        db.collection(id+'-hours').update({timestamp: timestamp}, results, { upsert: true }, function(err,res){
+          console.log(id+': HOURS '+timestamp);
+        })
       })
 
-      callback(err, docs.length)
 
     } else {
       callback(err, 0)
     }
 
   });
-
-
 
 }
 
@@ -78,14 +77,18 @@ var dayStatistics = function(db, id, minTimestamp, maxTimestamp, callback){
 
     if(docs.length != 0){
 
-      var mappedArray = docs.map(function (item) { return item.value; });
-      var results = generateStatisticsDocument(mappedArray, timestamp)
+      callback(err, docs.length)
 
-      db.collection(id+'-day').update({timestamp: timestamp}, results, { upsert: true }, function(err,res){
-        console.log(id+': DAY '+timestamp);
+      var mappedArray = docs.map(function (item) { return item.value; });
+      generateStatisticsDocument(mappedArray, timestamp, function(results){
+        db.collection(id+'-day').update({timestamp: timestamp}, results, { upsert: true }, function(err,res){
+          console.log(id+': DAY '+timestamp);
+        })
       })
 
-      callback(err, docs.length)
+
+
+
 
     } else {
       callback(err, 0)
@@ -114,19 +117,18 @@ var monthStatistics = function(db, id, minTimestamp, maxTimestamp, callback){
 
     if(docs.length != 0){
 
-      var mappedArray = docs.map(function (item) { return item.value; });
-      var results = generateStatisticsDocument(mappedArray, timestamp)
-
-      db.collection(id+'-month').update({timestamp: timestamp}, results, { upsert: true }, function(err,res){
-        console.log(id+': MONTH '+timestamp);
-      })
-
       callback(err, docs.length)
+
+      var mappedArray = docs.map(function (item) { return item.value; });
+      generateStatisticsDocument(mappedArray, timestamp, function(results){
+        db.collection(id+'-month').update({timestamp: timestamp}, results, { upsert: true }, function(err,res){
+          console.log(id+': MONTH '+timestamp);
+        })
+      })
 
     } else {
       callback(err, 0)
     }
-
 
 
   });
@@ -189,7 +191,7 @@ var previousMonthStatistics = function(db, id, nowTimestamp){
 
 }
 
-var generateStatisticsDocument = function(array, timestamp){
+var generateStatisticsDocument = function(array, timestamp, callback){
 
   var results = {}
 
@@ -200,7 +202,7 @@ var generateStatisticsDocument = function(array, timestamp){
   results.arrayCount = array.length
   results.createdAt = new Date()
 
-  return results;
+  callback(results)
 
 }
 
