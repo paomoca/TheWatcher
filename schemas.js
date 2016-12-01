@@ -1,6 +1,6 @@
 //JSON SCHEMAS
 
-var allowedTypes = '^(mode|median|mean)$'
+var allowedTypes = '^(mode|median|mean|all)$'
 var yearPattern = '^[2]\\d\\d\\d$'
 var monthPattern = '^[0-9]$|^[1][0-1]$'
 var dayPattern = '^[1-9]$|^[1-2]\\d$|^[3][0-1]$'

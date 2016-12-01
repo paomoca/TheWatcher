@@ -46,8 +46,12 @@ var queryYear = function (db, query, id, callback){
       }
     }
 
-    project.$project[query.type] = 1
-    finalProject.$project[query.type] = 1
+    if(query.type != 'all'){
+
+      project.$project[query.type] = 1
+      finalProject.$project[query.type] = 1
+    }
+
 
 
     collection.aggregate([project, match, finalProject, sort]).toArray(function(err, docs) {
