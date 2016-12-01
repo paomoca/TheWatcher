@@ -11,7 +11,6 @@ var schemas = require('./schemas.js')
 var db_functions = require('./db_functions.js')
 var statistics_queries = require('./statistics-queries.js')
 var date_validations = require('./date-validations.js')
-var launch_routine = require('./launch-routine.js')
 var cron_functions = require('./cron.js')
 
 var statistics = require('./calculate-statistics.js')
@@ -47,9 +46,6 @@ MongoClient.connect(url, function(err, database) {
   console.log("Connected successfully to server")
   db = database
 
-  // launch_routine.run(db, function(msg){
-  //   console.log(msg)
-  // })
   //
   // cron.schedule('0 0-23 * * *', function(){
   //
@@ -89,6 +85,34 @@ var jsonRespose = function(res, status, json){
   res.send(json)
 
 }
+
+app.post('/hola', function(req, res){
+
+  console.log(req)
+  console.log(req.body)
+
+  var response = JSON.stringify({
+    payload: {
+      dataKey: 'funciono post'
+    }
+  })
+  jsonRespose(res, 200, response)
+
+})
+
+app.get('/hola', function(req, res){
+
+  console.log(req)
+  console.log(req.body)
+
+  var response = JSON.stringify({
+    payload: {
+      dataKey: 'funciono get'
+    }
+  })
+  jsonRespose(res, 200, response)
+
+})
 
 /* API PANEL ADMINISTRADOR ***********************************************************************************************/
 
