@@ -2,10 +2,10 @@
 
 var allowedTypes = '^(mode|median|mean)$'
 var yearPattern = '^[2]\\d\\d\\d$'
-var monthPattern = '^[1-9]$|^[1][0-2]$'
+var monthPattern = '^[0-9]$|^[1][0-1]$'
 var dayPattern = '^[1-9]$|^[1-2]\\d$|^[3][0-1]$'
 var hourPattern = '^\\d$|^[1]\\d$|^[2][0-3]$'
-var weekDayPattern = '^[1-7]$'
+var weekDayPattern = '^[0-6]$'
 var offsetPattern = '^[1-9]$|^\\d\\d$|^[1-7]\\d\\d$|^[1-8][0-3]\\d$|^[1-8][4][0]$|^[-][1-9]$|^[-]\\d\\d$|^[-][1-6]\\d\\d$|^[-][1-7][2][0]$'
 var millisecondsPattern = '^\\d+$'
 

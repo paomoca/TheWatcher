@@ -1,5 +1,7 @@
 var assert = require('assert')
 var ObjectId = require('mongodb').ObjectID
+var moment = require('moment-timezone')
+
 
 var insertVariable = function(db, body, callback) {
 
@@ -147,16 +149,9 @@ var findVariableDevices = function(db, dataKey, callback){
 
 var getVariableOffset = function (db, dataKey, callback){
 
-  var collection = db.collection('variables')
+  getVariableTimezone(db, dataKey, function(timezone){
 
-  collection.findOne({_id: ObjectId(dataKey)},{ fields: { timezoneOffset: 1, _id: 0}}, function(err, doc){
-
-    if(err || !doc){
-      callback(0)
-    } else {
-      callback(doc.timezoneOffset)
-    }
-
+    callback(moment.tz.zone(timezone).offset(1403465838805))
 
   })
 

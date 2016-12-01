@@ -1,11 +1,6 @@
 var ObjectId = require('mongodb').ObjectID
 var statistics = require('simple-statistics')
 var moment = require('moment-timezone')
-var date_validations = require('./date-validations.js')
-
-//1 Enero 2016 00:00
-var minUTCTimestamp = 1451606400000
-var minUTC = new Date(minUTCTimestamp)
 
 var project = {
   $project:

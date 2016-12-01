@@ -47,28 +47,37 @@ MongoClient.connect(url, function(err, database) {
   console.log("Connected successfully to server")
   db = database
 
-  launch_routine.run(db, function(msg){
-    console.log(msg)
-  })
-
-  cron.schedule('0 0-23 * * *', function(){
-
-    console.log('***** running every HOUR from 1 to 23 ')
-
-    var now = new Date()
-    now.setUTCMinutes(0)
-    now.setUTCSeconds(0)
-    now.setUTCMilliseconds(0)
-
-    cron_functions.runStatistics(db, now.getTime(), function(msg){
-      console.log(msg)
-    })
-
-  });
+  // launch_routine.run(db, function(msg){
+  //   console.log(msg)
+  // })
+  //
+  // cron.schedule('0 0-23 * * *', function(){
+  //
+  //   console.log('***** running every HOUR from 1 to 23 ')
+  //
+  //   var now = new Date()
+  //   now.setUTCMinutes(0)
+  //   now.setUTCSeconds(0)
+  //   now.setUTCMilliseconds(0)
+  //
+  //   cron_functions.runStatistics(db, now.getTime(), function(msg){
+  //     console.log(msg)
+  //   })
+  //
+  // });
 
   // moment.tz.names().forEach(function(item, index){
   //   console.log(item);
   // })
+  //   var obj = { year : 2016, hour: 22 }
+  //
+  //   var mt = moment.tz(obj, "America/Mexico_City").day(5)
+  //   var mm = mt.clone().utc()
+  //
+  //
+  // console.log(mt+'-    '+mt.day())
+  // console.log(mm+'-    '+mm.day())
+
 
 
 });
@@ -365,7 +374,7 @@ app.post('/data/:dataKey/:deviceKey', validate({body: schemas.DeviceDataSchema})
 /* API ESTADISTICAS ***************************************************************************/
 
 // 1. ANIO
-//Prueba: localhost:3000/statistics/year/582b7288009e5750e40a43ac?year=2016&type=mean
+//Prueba: localhost:3000/statistics/year/583f845393e5b820ac46dcfd?year=2016&type=mean
 app.get('/statistics/year/:dataKey', validate({query: schemas.YearSchema}), function(req, res, next){
 
   statistics_queries.queryYear(db, req.query, req.params.dataKey, function(err, docs){
@@ -381,7 +390,7 @@ app.get('/statistics/year/:dataKey', validate({query: schemas.YearSchema}), func
 })
 
 // 2. MES
-//Prueba: localhost:3000/statistics/month/582b7288009e5750e40a43ac?year=2016&month=3&type=mean
+//Prueba: localhost:3000/statistics/month/583f845393e5b820ac46dcfd?year=2016&month=3&type=mean
 app.get('/statistics/month/:dataKey', validate({query: schemas.MonthSchema}), function(req, res, next){
 
   statistics_queries.queryMonth(db, req.query, req.params.dataKey, function(err, docs){
@@ -397,7 +406,7 @@ app.get('/statistics/month/:dataKey', validate({query: schemas.MonthSchema}), fu
 })
 
 // 3. DIA
-//Prueba: localhost:3000/statistics/day/582b7288009e5750e40a43ac?year=2016&month=3&day=20&type=mean
+//Prueba: localhost:3000/statistics/day/583f845393e5b820ac46dcfd?year=2016&month=3&day=20&type=mean
 app.get('/statistics/day/:dataKey', validate({query: schemas.DaySchema}), function(req, res, next){
 
   statistics_queries.queryDay(db, req.query, req.params.dataKey, function(err, docs){
@@ -413,10 +422,28 @@ app.get('/statistics/day/:dataKey', validate({query: schemas.DaySchema}), functi
 })
 
 // 4. WEEKDAY
-//Prueba: localhost:3000/statistics/weekDay/582b7288009e5750e40a43ac?year=2016&weekDay=1&type=mean
+//Prueba: localhost:3000/statistics/weekDay/583f845393e5b820ac46dcfd?year=2016&weekDay=1&type=mean
 app.get('/statistics/weekDay/:dataKey', validate({query: schemas.WeekDaySchema}), function(req, res, next){
 
-  statistics_queries.queryWeekDay(db, req.query, req.params.dataKey, function(err, docs){
+    statistics_queries.queryWeekDay(db, req.query, req.params.dataKey, function(err, docs){
+
+      if(err){
+        next(err)
+      } else {
+        jsonRespose(res, 200, docs)
+      }
+
+    })
+
+})
+
+// 5. WEEKDAY HOUR
+//weekDay : [0-6] (Sunday-Saturday)
+// Prueba: localhost:3000/statistics/weekDay/hour/583f845393e5b820ac46dcfd?year=2016&weekDay=1&hour=19&type=mean
+app.get('/statistics/weekDay/hour/:dataKey', validate({query: schemas.WeekDayHourSchema}), function(req, res, next){
+
+  //Gets statistics, querying data with the new UTCValue
+  statistics_queries.queryWeekDayHour(db, req.query, req.params.dataKey, function(err, docs){
 
     if(err){
       next(err)
@@ -428,80 +455,19 @@ app.get('/statistics/weekDay/:dataKey', validate({query: schemas.WeekDaySchema})
 
 })
 
-// 5. WEEKDAY HOUR
-// Prueba: localhost:3000/statistics/weekDay/hour/582b7288009e5750e40a43ac?year=2016&weekDay=1&hour=19&type=mean
-app.get('/statistics/weekDay/hour/:dataKey', validate({query: schemas.WeekDayHourSchema}), function(req, res, next){
-
-  //Get the timezoneOffset of the corresponding variable
-  db_functions.getVariableOffset(db, req.params.dataKey, function(timezoneOffset){
-
-    //Calculates the new values for weekDay and hour according to the timezoneOffset.
-    // (The year is left alone since we are getting back values for all the $weekDays in that $year)
-    date_validations.calculateUTCWeekDayHour(req.query, timezoneOffset, function(UTCQuery){
-
-      //Gets statistics, querying data with the new UTCValue
-      statistics_queries.queryWeekDayHour(db, UTCQuery, req.params.dataKey, function(err, docs){
-
-        if(err){
-          next(err)
-        } else {
-          jsonRespose(res, 200, docs)
-        }
-
-      })
-    })
-  })
-
-
-
-
-})
-
 // 6. RANGE DAY
-//Prueba: llocalhost:3000/statistics/range/day/583b235b9746d113699b4d4a?y1=2016&m1=2&d1=20&y2=2016&m2=11&d2=16&type=mean
+//Prueba: localhost:3000/statistics/range/day/583f845393e5b820ac46dcfd?y1=2016&m1=2&d1=20&y2=2016&m2=11&d2=16&type=mean
 app.get('/statistics/range/day/:dataKey', validate({query: schemas.RangeDaySchema}),  function(req, res, next){
 
-  db_functions.getVariableOffset(db, req.params.dataKey, function(timezoneOffset){
+  statistics_queries.queryRangeDay(db, req.query, req.params.dataKey, function(err, docs){
 
-    date_validations.calculateUTCRangeDay(req.query, timezoneOffset, function(err, query){
-
-      if(!err){
-
-        statistics_queries.queryRangeDay(db, query, req.params.dataKey, function(err, docs){
-
-          if(err){
-            next(err)
-          } else {
-            jsonRespose(res, 200, docs)
-          }
-
-        })
-
-      } else {
-        next(err)
-      }
-    })
+    if(err){
+      next(err)
+    } else {
+      jsonRespose(res, 200, docs)
+    }
 
   })
-
-
-  // date_validations.dateRangeValidation(req.query.date1, req.query.date2, function(err){
-  //
-  //   if(!err){
-  //     statistics_queries.queryRangeDay(db, req.query, req.params.dataKey, function(err, docs){
-  //
-  //       if(err){
-  //         next(err)
-  //       } else {
-  //         jsonRespose(res, 200, docs)
-  //       }
-  //
-  //     })
-  //
-  //   } else {
-  //     next(err)
-  //   }
-  // })
 
 })
 
@@ -509,26 +475,13 @@ app.get('/statistics/range/day/:dataKey', validate({query: schemas.RangeDaySchem
 //Prueba: llocalhost:3000/statistics/range/day/hour/583b235b9746d113699b4d4a?y1=2016&m1=2&d1=20&y2=2016&m2=11&d2=16&hour=18&type=mean
 app.get('/statistics/range/day/hour/:dataKey', validate({query: schemas.RangeDayHourSchema}), function(req, res, next){
 
-  db_functions.getVariableOffset(db, req.params.dataKey, function(timezoneOffset){
+  statistics_queries.queryRangeDayHour(db, req.query, req.params.dataKey, function(err, docs){
 
-    date_validations.calculateUTCRangeDayHour(req.query, timezoneOffset, function(err, query){
-
-      if(!err){
-
-        statistics_queries.queryRangeDayHour(db, query, req.params.dataKey, function(err, docs){
-
-          if(err){
-            next(err)
-          } else {
-            jsonRespose(res, 200, docs)
-          }
-
-        })
-
-      } else {
-        next(err)
-      }
-    })
+    if(err){
+      next(err)
+    } else {
+      jsonRespose(res, 200, docs)
+    }
 
   })
 
@@ -542,18 +495,18 @@ app.get('/statistics/range/day/hour/:dataKey', validate({query: schemas.RangeDay
 //   res.send('Good')
 // })
 //
-app.get('/data/variable/:dataKey', function (req, res, next) {
-
-
-  var collection = db.collection(req.params.dataKey).find().sort({value:1}).toArray(function(err,docs){
-    if(!err){
-      jsonRespose(res, 200, docs)
-    } else {
-      next(err)
-    }
-  })
-
-})
+// app.get('/data/variable/:dataKey', function (req, res, next) {
+//
+//
+//   var collection = db.collection(req.params.dataKey).find().sort({value:1}).toArray(function(err,docs){
+//     if(!err){
+//       jsonRespose(res, 200, docs)
+//     } else {
+//       next(err)
+//     }
+//   })
+//
+// })
 
 // app.get('/data/device/:deviceKey', validate({query: schemas.GetDataSchema}),  function (req, res) {
 //   //  res.status(201)
@@ -655,6 +608,7 @@ app.use(function (err, req, res, next) {
     // pass error to next error middleware handler
     //  next(err);
     res.status(400)
+    console.log(err);
     res.send('error')
   }
 })
