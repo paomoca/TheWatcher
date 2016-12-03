@@ -46,21 +46,21 @@ MongoClient.connect(url, function(err, database) {
   console.log("Connected successfully to server")
   db = database
 
-  //
-  // cron.schedule('0 0-23 * * *', function(){
-  //
-  //   console.log('***** running every HOUR from 1 to 23 ')
-  //
-  //   var now = new Date()
-  //   now.setUTCMinutes(0)
-  //   now.setUTCSeconds(0)
-  //   now.setUTCMilliseconds(0)
-  //
-  //   cron_functions.runStatistics(db, now.getTime(), function(msg){
-  //     console.log(msg)
-  //   })
-  //
-  // });
+
+  cron.schedule('0 0-23 * * *', function(){
+
+    console.log('***** running every HOUR from 1 to 23 ')
+
+    var now = new Date()
+    now.setUTCMinutes(0)
+    now.setUTCSeconds(0)
+    now.setUTCMilliseconds(0)
+
+    cron_functions.runStatistics(db, now.getTime(), function(msg){
+      console.log(msg)
+    })
+
+  });
 
   // moment.tz.names().forEach(function(item, index){
   //   console.log(item);

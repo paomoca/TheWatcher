@@ -49,7 +49,43 @@ var runStatistics = function(db, timestamp, callback){
 
   })
 
+  // db.collection('cron-logs').
+
+  // Return the information of a single collection name
+  db.listCollections({name: 'cron-logs'}).toArray(function(err, items) {
+
+    if(err || items.length == 0){
+      db.createCollection('cron-logs', { capped : true, size : 100, max : 1 }, function(err, collection) {
+
+        logCronTimestamp(db, timestamp)
+
+      })
+    } else {
+      logCronTimestamp(db, timestamp)
+    }
+
+  })
+
   callback('Launched all hourly statistic calculations')
+
+}
+
+var logCronTimestamp = function(db, timestamp){
+
+  var collection = db.collection('cron-logs')
+
+  collection.isCapped(function(err, res){
+      console.log(res);
+  })
+
+  // Insert a document in the capped collection
+  collection.insertOne({lastCronTimestamp:timestamp}, function(err, result) {
+    if(err){
+      console.log('error logging last cron timestamp');
+    } else {
+      console.log('Logged last cron timestamp to: '+new Date(timestamp))
+    }
+  })
 
 }
 
