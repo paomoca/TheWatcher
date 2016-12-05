@@ -31,7 +31,11 @@ var VariableSchema = {
         },
         timezone: {
           type: 'string',
-          required: false
+          required: true
+        },
+        tipo: {
+          type: 'string',
+          required: true
         },
         descripcion: {
           type: 'string',
@@ -124,9 +128,8 @@ var DataSchema = {
                   type: 'object',
                   properties:{
                     time: {
-                      type: 'number',
-                      required: true,
-                      minimum: 1451606400000
+                      type: 'string',
+                      required: true
                     },
                     value: {
                       type: 'number',

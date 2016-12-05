@@ -41,7 +41,6 @@ var insertDevice = function(db, body, callback) {
 
 }
 
-
 var insertData = function(db, dataKey, deviceKey, measurements, callback) {
 
   validateKeys(db, dataKey, deviceKey, function(err,res){
@@ -153,12 +152,11 @@ var getVariableTimezone = function (db, dataKey, callback){
 
   collection.findOne({_id: ObjectId(dataKey)},{ fields: { timezone: 1, _id: 0}}, function(err, doc){
 
-    if(err || !doc.timezone){
+    if(!doc || err || !doc.timezone){
       callback("America/Mexico_City")
     } else {
       callback(doc.timezone)
     }
-
 
   })
 
@@ -168,7 +166,7 @@ var findLastMeasurements = function(db, dataKey, callback){
 
   var collection = db.collection(dataKey)
 
-  collection.find({}).sort({ date: 1 }).limit(45).toArray(function(err, docs) {
+  collection.find({}).sort({ date: -1 }).limit(45).toArray(function(err, docs) {
     callback(err, docs)
   })
 
@@ -176,29 +174,43 @@ var findLastMeasurements = function(db, dataKey, callback){
 
 /***************************************************************************/
 
-var updateDocument = function(db, callback) {
-  // Get the documents collection
-  var collection = db.collection('documents');
-  // Update document where a is 2, set b equal to 1
-  collection.updateOne({ a : 2 }
-    , { $set: { b : 1 } }, function(err, result) {
-    assert.equal(err, null);
-    assert.equal(1, result.result.n);
-    console.log("Updated the document with the field a equal to 2");
-    callback(result);
-  });
+
+var removeVariable = function(db, dataKey, callback){
+
+  var collection = db.collection('variables')
+  console.log(dataKey);
+
+  collection.deleteOne({_id: ObjectId(dataKey)}, function(err, res){
+    console.log('Removed Variable')
+    callback(err, res)
+  })
+
+  db.dropCollection(dataKey+'-day', function(err, result) {
+    console.log(err);
+    console.log('Removed Day statistics')
+  })
+
+  db.dropCollection(dataKey+'-month', function(err, result) {
+    console.log(err);
+    console.log('Removed Month statistics')
+  })
+
+  db.dropCollection(dataKey+'-hours', function(err, result) {
+    console.log(err);
+    console.log('Removed Hours statistics')
+  })
+
 }
 
-var removeDocument = function(db, callback) {
-  // Get the documents collection
-  var collection = db.collection('documents');
-  // Insert some documents
-  collection.deleteOne({ a : 3 }, function(err, result) {
-    assert.equal(err, null);
-    assert.equal(1, result.result.n);
-    console.log("Removed the document with the field a equal to 3");
-    callback(result);
-  });
+var removeDevice = function(db, deviceKey, callback){
+
+  var collection = db.collection('devices')
+
+  collection.deleteOne({_id: ObjectId(deviceKey)}, function(err, res){
+    console.log('Removed Device')
+    callback(err, res)
+  })
+
 }
 
 exports.insertVariable = insertVariable
@@ -210,8 +222,8 @@ exports.findVariableDevices = findVariableDevices
 exports.findVariable = findVariable
 exports.findDevice = findDevice
 
-exports.updateDocument = updateDocument
-exports.removeDocument = removeDocument
-
 exports.getVariableTimezone = getVariableTimezone
 exports.findLastMeasurements = findLastMeasurements
+
+exports.removeVariable = removeVariable
+exports.removeDevice = removeDevice

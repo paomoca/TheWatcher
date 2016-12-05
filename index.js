@@ -6,15 +6,12 @@ var bodyParser = require('body-parser')
 var cron = require('node-cron')
 var moment = require('moment-timezone')
 
-
 var schemas = require('./schemas.js')
 var db_functions = require('./db_functions.js')
 var statistics_queries = require('./statistics-queries.js')
-var date_validations = require('./date-validations.js')
 var cron_functions = require('./cron.js')
 
 var statistics = require('./calculate-statistics.js')
-
 
 var app = express()
 //var jwt = require('express-jwt')
@@ -29,14 +26,17 @@ var app = express()
 app.use(bodyParser.json()) // support json encoded bodies
 app.use(bodyParser.urlencoded({ extended: true })) // support encoded bodies
 app.use(function(req, res, next) {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  res.header("Access-Control-Allow-Origin", "*")
+  res.header('Access-Control-Allow-Methods', 'GET, POST, DELETE')
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept")
   next();
 });
 
 // Connection URL
 //var url = 'mongodb://172.16.73.145:27017/juan';
-var url = 'mongodb://localhost:27017/myproject';
+//the-watcher
+//myproject
+var url = 'mongodb://localhost:27017/the-watcher';
 //var url = 'mongodb://juan:juanito@ds057176.mlab.com:57176/paomoca-tests'
 
 // Use connect method to connect to the server
@@ -61,20 +61,6 @@ MongoClient.connect(url, function(err, database) {
     })
 
   });
-
-  // moment.tz.names().forEach(function(item, index){
-  //   console.log(item);
-  // })
-  //   var obj = { year : 2016, hour: 22 }
-  //
-  //   var mt = moment.tz(obj, "America/Mexico_City").day(5)
-  //   var mm = mt.clone().utc()
-  //
-  //
-  // console.log(mt+'-    '+mt.day())
-  // console.log(mm+'-    '+mm.day())
-
-
 
 });
 
@@ -149,6 +135,28 @@ app.post('/variable', validate({body: schemas.VariableSchema}), function (req, r
 
 })
 
+app.delete('/variable/:dataKey', function(req, res, next){
+  console.log('got delete variable');
+
+  db_functions.removeVariable(db, req.params.dataKey, function(err, result){
+
+    if(err){
+      next(err)
+    } else {
+
+      var response = JSON.stringify({
+        payload: {
+          removed: req.params.dataKey
+        }
+      })
+
+      jsonRespose(res, 200, response)
+    }
+
+  })
+
+})
+
 // 2. Nuevo dispositivo
 
 //Prueba
@@ -180,6 +188,27 @@ app.post('/device', validate({body: schemas.DeviceSchema}), function (req, res, 
 
   })
 
+})
+
+app.delete('/device/:deviceKey', function(req, res, next){
+  console.log('got delete device');
+
+  db_functions.removeDevice(db, req.params.deviceKey, function(err, result){
+
+    if(err){
+      next(err)
+    } else {
+
+      var response = JSON.stringify({
+        payload: {
+          removed: req.params.deviceKey
+        }
+      })
+
+      jsonRespose(res, 200, response)
+    }
+
+  })
 })
 
 //6. Petición de lista de variables
@@ -221,10 +250,10 @@ app.get('/devices/:variable_id', function (req, res) {
 
 })
 
-// Petición de la información de un device en específico
-app.get('/device/:device_id', function (req, res) {
+// 9. Petición de la información de un device en específico
+app.get('/device/:deviceKey', function (req, res) {
 
-  db_functions.findDevice(db, req.params.device_id, function(err, docs){
+  db_functions.findDevice(db, req.params.deviceKey, function(err, docs){
     if(err){
       next(err)
     } else {
@@ -263,7 +292,9 @@ app.post('/data', validate({body: schemas.DataSchema}), function (req, res, next
     measurementsArray.forEach(function(measurementItem){
 
       measurementItem.deviceKey = deviceKey
-      measurementItem.date = new Date(measurementItem.time)
+      measurementItem.date = new Date(parseInt(measurementItem.time))
+      measurementItem.time = parseInt(measurementItem.time)
+
     })
 
     db_functions.insertData(db, dataKey, deviceKey, measurementsArray, function(err,result) {
@@ -317,7 +348,9 @@ app.post('/data/:dataKey', validate({body: schemas.VariableDataSchema}), functio
 
     measurementsArray.forEach(function(measurementItem){
       measurementItem.deviceKey = deviceKey
-      measurementItem.date = new Date(measurementItem.time)
+      measurementItem.date = new Date(parseInt(measurementItem.time))
+      measurementItem.time = parseInt(measurementItem.time)
+
 
     })
 
@@ -370,7 +403,8 @@ app.post('/data/:dataKey/:deviceKey', validate({body: schemas.DeviceDataSchema})
 
     measurementsArray.forEach(function(measurementItem){
       measurementItem.deviceKey = deviceKey
-      measurementItem.date = new Date(measurementItem.time)
+      measurementItem.date = new Date(parseInt(measurementItem.time))
+      measurementItem.time = parseInt(measurementItem.time)
 
     })
 
